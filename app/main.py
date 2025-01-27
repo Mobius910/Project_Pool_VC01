@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
-import mariadb, time, os, socket
+import mariadb, time, os
 
 # Create a FastAPI instance
 app = FastAPI()
@@ -46,16 +46,13 @@ def shutdown():
         pool.close()
         print("Database connection closed")
 
+# Path to the logfile
+log_file_path = Path("logfile.log")
 
-# 
-@app.get("/", response_class=HTMLResponse)
-async def show_log(request: Request):
-    # Path to the logfile
-    log_file_path = Path("logfile.log")
-    log_content = []
-
+# API route to read log file
+@app.get("/log")
+async def get_log():
     if log_file_path.exists():
-        # Read the log file
         with log_file_path.open("r") as file:
             log_content = file.readlines()
     else:
@@ -63,8 +60,17 @@ async def show_log(request: Request):
         # Write error to log file
         with log_file_path.open("a") as file:
             file.write("[ERROR] Log file not found.\n")
+    return JSONResponse(content={"log": log_content})
 
-    return templates.TemplateResponse("logviewer.html", {"request": request, "log_content": log_content})
+# API route to add a new calculation log
+@app.post("/calculate")
+async def add_calculation(calculation: str):
+    try:
+        with log_file_path.open("a") as file:
+            file.write(f"[INFO] New calculation: {calculation}\n")
+        return {"message": "Calculation logged successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn app:app --reload
