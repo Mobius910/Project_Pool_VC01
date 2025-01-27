@@ -20,10 +20,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        <a class="nav-link" href="./index.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="./logs.html">logs</a>
+                        <a class="nav-link active" aria-current="page" href="#">logs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Settings</a>
@@ -36,8 +36,8 @@
     <!-- Header -->
     <header class="bg-primary text-white py-3 shadow-sm">
         <div class="container">
-            <h1 class="h3 text-center">Zwembadbeheer</h1>
-            <p class="text-center mb-0">Invoer van chemische waarden voor optimale waterkwaliteit</p>
+            <h1 class="h3 text-center">Log File Viewer</h1>
+            <p class="text-center mb-0">verzameling van alle Pool Monitoring App meldingen.</p>
         </div>
     </header>
 
@@ -47,25 +47,14 @@
             <div class="col-lg-6 col-md-8 col-sm-10">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="h5 text-center">Zwembadwaarden Invoeren</h2>
+                        <h2 class="h5 text-center">Logs</h2>
                     </div>
                     <div class="card-body">
-                        <form id="pool-form">
-                            <!-- pH Waarde Invoer -->
-                            <div class="mb-3">
-                                <label for="ph" class="form-label">pH-waarde</label>
-                                <input type="number" step="0.01" id="ph" name="ph" class="form-control" placeholder="Bijvoorbeeld: 7.4" required>
-                            </div>
-                            <!-- Chloor Waarde Invoer -->
-                            <div class="mb-3">
-                                <label for="chlorine" class="form-label">Chloor (mg/L)</label>
-                                <input type="number" step="0.01" id="chlorine" name="chlorine" class="form-control" placeholder="Bijvoorbeeld: 1.5" required>
-                            </div>
-                            <!-- Verzendknop -->
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Verstuur Waarden</button>
-                            </div>
-                        </form>
+                        <pre class="text-monospace">
+                            {% for line in log_content %}
+                            {{ line }}
+                            {% endfor %}
+                        </pre>
                     </div>
                 </div>
             </div>
