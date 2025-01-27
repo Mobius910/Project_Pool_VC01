@@ -58,7 +58,7 @@
                         <a class="nav-link" href="Logs.html">Logs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Settings</a>
+                        <a class="nav-link" href="settings.html">Settings</a>
                     </li>
                 </ul>
             </div>
@@ -90,6 +90,9 @@
                                         <th>Datum</th>
                                         <th>pH-waarde</th>
                                         <th>Chloor (mg/L)</th>
+                                        <th>pH + (ml)</th>
+                                        <th>pH - (ml)</th>
+                                        <th>Chloor Benodigd (ml)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -117,35 +120,79 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Verkrijg de opgeslagen history uit localStorage
-        const history = JSON.parse(localStorage.getItem("history")) || [];
+// Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
+const poolVolume = localStorage.getItem("poolVolume") || 50; // Standaard 50 m³ als geen volume is ingesteld
 
-        // Selecteer de tabel body
-        const tableBody = document.querySelector("tbody");
+// Verkrijg de opgeslagen history uit localStorage
+const history = JSON.parse(localStorage.getItem("history")) || [];
 
-        // Voeg elke logitem toe aan de tabel
-        history.forEach((item, index) => {
-            const row = document.createElement("tr");
+// Selecteer de tabel body
+const tableBody = document.querySelector("tbody");
 
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.date}</td>
-                <td>${item.ph}</td>
-                <td>${item.chlorine}</td>
-            `;
+// Voeg elke logitem toe aan de tabel
+history.forEach((item, index) => {
+    const row = document.createElement("tr");
 
-            tableBody.appendChild(row);
-        });
+    // Bereken pH-aanpassing (pH+ of pH-)
+    let phPlus = 0;
+    let phMinus = 0;
+    
+    const gramsPer0_1ph = (75 * poolVolume) / 10; // Aangepaste dosering voor pH per 10 m³
+    const phRequiredMl = (gramsPer0_1ph).toFixed(2); // Hoeveelheid pH+ of pH- in ml per 0,1 pH wijziging
+    
+    if (item.ph < 7.0) {
+        // pH-waarde is te laag, dus we moeten pH+ toevoegen
+        const requiredPhPlus = ((7.0 - item.ph) * gramsPer0_1ph) / 0.1; // Aangepaste dosering voor 0,1 pH stijging
+        phPlus = requiredPhPlus.toFixed(2); // Hoeveelheid pH+ in ml
+    } else if (item.ph > 7.6) {
+        // pH-waarde is te hoog, dus we moeten pH- toevoegen
+        const requiredPhMinus = ((item.ph - 7.6) * gramsPer0_1ph) / 0.1; // Aangepaste dosering voor 0,1 pH daling
+        phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
+    }
 
-        // Voeg een event listener toe aan de verwijder-knop
-        document.getElementById("clear-history").addEventListener("click", function() {
-            // Verwijder de geschiedenis uit localStorage
-            localStorage.removeItem("history");
+    // Bereken de benodigde hoeveelheid chloor in ml
+    const chlorineCurrent = item.chlorine;  // Huidige chloorwaarde in ppm
+    const chlorineDesired = 2;  // Gewenste chloorwaarde in ppm (bijvoorbeeld 2 ppm)
+    
+    let chlorineRequiredGrams = 0;
+    if (chlorineCurrent < chlorineDesired) {
+        chlorineRequiredGrams = (poolVolume * 1000 * (chlorineDesired - chlorineCurrent)) / 1000; // Benodigde chloor in gram
+    } else {
+        chlorineRequiredGrams = 0;  // Geen chloor nodig als de waarde boven het gewenste niveau is
+    }
 
-            // Herlaad de pagina om de tabel te updaten
-            window.location.reload();
-        });
+    // Chloor in ml
+    const chlorineConcentration = 1; // Aangenomen concentratie van de chlooroplossing (voorbeeld 1 gram/ml)
+    const chlorineRequiredMl = (chlorineRequiredGrams / chlorineConcentration).toFixed(2); // Benodigde hoeveelheid in ml
+
+    // Voeg de gegevens toe aan de rij
+    row.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${item.date}</td>
+        <td>${item.ph}</td>
+        <td>${item.chlorine} ppm</td>
+        <td>${phPlus} ml pH+</td>
+        <td>${phMinus} ml pH-</td>
+        <td>${chlorineRequiredMl} ml Chloor</td>
+    `;
+
+    tableBody.appendChild(row);
+});
+
+// Voeg een event listener toe aan de verwijder-knop
+document.getElementById("clear-history").addEventListener("click", function() {
+    // Verwijder de geschiedenis uit localStorage
+    localStorage.removeItem("history");
+
+    // Herlaad de pagina om de tabel te updaten
+    window.location.reload();
+});
+
     </script>
+    
+    
+    
 </body>
 </html>
