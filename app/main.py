@@ -73,4 +73,4 @@ async def add_calculation(calculation: str):
         raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
 
 # To run the FastAPI app, use the following command in the terminal:
-# uvicorn app:app --reload
+# uvicorn main:app --host 0.0.0.0 --port 3000 --reload
