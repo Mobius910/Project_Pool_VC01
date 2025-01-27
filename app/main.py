@@ -47,10 +47,7 @@ def shutdown():
         print("Database connection closed")
 
 
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
+# 
 @app.get("/", response_class=HTMLResponse)
 async def show_log(request: Request):
     # Path to the logfile
@@ -71,24 +68,3 @@ async def show_log(request: Request):
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn app:app --reload
-
-
-# API route to fetch name
-@app.get("/api/user")
-async def get_name():
-    try:
-        query = "SELECT Name FROM users"
-        result = query_name(query)
-        if not result:
-            raise HTTPException(status_code=404, detail="No user found")
-        return {"name": result[0]["Name"]}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# API route to fetch API container id
-@app.get("/api/id")
-async def get_id():
-    try:
-        return {"container_id": socket.gethostname()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
