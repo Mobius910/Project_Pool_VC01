@@ -154,17 +154,17 @@ history.forEach((item, index) => {
 
     // Bereken de benodigde hoeveelheid chloor in ml
     const chlorineCurrent = item.chlorine;  // Huidige chloorwaarde in ppm
-    const chlorineDesired = 2;  // Gewenste chloorwaarde in ppm (bijvoorbeeld 2 ppm)
+    const chlorineDesired = 3;  // Gewenste chloorwaarde in ppm (bijvoorbeeld 2 ppm)
     
     let chlorineRequiredGrams = 0;
     if (chlorineCurrent < chlorineDesired) {
-        chlorineRequiredGrams = (poolVolume * 1000 * (chlorineDesired - chlorineCurrent)) / 1000; // Benodigde chloor in gram
+        chlorineRequiredGrams = (poolVolume * (chlorineDesired - chlorineCurrent)); // Benodigde chloor in grams
     } else {
         chlorineRequiredGrams = 0;  // Geen chloor nodig als de waarde boven het gewenste niveau is
     }
 
     // Chloor in ml
-    const chlorineConcentration = 1; // Aangenomen concentratie van de chlooroplossing (voorbeeld 1 gram/ml)
+    const chlorineConcentration = 0.15; //moet nog variable worden  // Aangenomen concentratie van de chlooroplossing (voorbeeld 1 gram/ml)
     const chlorineRequiredMl = (chlorineRequiredGrams / chlorineConcentration).toFixed(2); // Benodigde hoeveelheid in ml
 
     // Voeg de gegevens toe aan de rij
