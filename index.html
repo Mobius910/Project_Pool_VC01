@@ -65,7 +65,7 @@
                         <a class="nav-link" href="./logs.html">Logs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Settings</a>
+                        <a class="nav-link" href="settings.html">Settings</a>
                     </li>
                 </ul>
             </div>
@@ -122,30 +122,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Verkrijg het zwembadvolume uit localStorage, met standaardwaarde 50m³ als niet ingesteld
+        const poolVolume = parseFloat(localStorage.getItem("poolVolume")) || 50;
+    
         // Functie om formulier in te dienen en waarden op te slaan in localStorage
         document.getElementById("pool-form").addEventListener("submit", function(e) {
             e.preventDefault();
-    
+        
             // Verkrijg de waarden van de invoervelden
-            const ph = document.getElementById("ph").value;
-            const chlorine = document.getElementById("chlorine").value;
-    
+            const ph = parseFloat(document.getElementById("ph").value);
+            const chlorine = parseFloat(document.getElementById("chlorine").value);
+        
             // Verkrijg de huidige datum
             const date = new Date().toLocaleDateString();
     
+            // Berekeningen voor pH-waarde (dynamisch zwembadvolume)
+            const phAdjustment = 375 * (Math.abs(ph - 7.4) / 0.1) * (poolVolume / 50); // Dynamisch zwembadvolume
+            const chlorineRequired = (poolVolume * 1000) * (2 - chlorine) / 1000; // Dynamisch zwembadvolume
+    
             // Verkrijg huidige history uit localStorage
             let history = JSON.parse(localStorage.getItem("history")) || [];
-    
-            // Voeg de nieuwe invoer toe aan de geschiedenis
-            history.push({ date, ph, chlorine });
-    
+        
+            // Voeg de nieuwe invoer en berekeningen toe aan de geschiedenis
+            history.push({ date, ph, chlorine, phAdjustment, chlorineRequired });
+        
             // Sla de bijgewerkte geschiedenis op in localStorage
             localStorage.setItem("history", JSON.stringify(history));
-    
+        
             // Optioneel: Redirect naar de history-pagina (history.html)
             window.location.href = "history.html";
         });
     </script>
+    
     
 </body>
 </html>
