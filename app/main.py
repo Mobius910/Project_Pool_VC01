@@ -1,11 +1,15 @@
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from dotenv import load_dotenv
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
-import mariadb, time, os, socket
+import mariadb, time, os
 
 # Create a FastAPI instance
 app = FastAPI()
+
+# Load environment variables
+load_dotenv()
 
 # Add CORS middleware
 app.add_middleware(
@@ -22,6 +26,9 @@ pool = None
 # Database credentials
 user = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
+database = os.getenv('MYSQL_DATABASE')
+host = os.getenv('HOST')
+port = os.getenv('PORT')
 
 # Database connection
 @app.on_event("startup")
@@ -31,7 +38,7 @@ def database_connection():
     retries = 10
     for attempt in range(retries):
         try:
-            pool = mariadb.ConnectionPool(user="#", password="#", host="#", port=3306, database="#", pool_name="#", pool_size=5)
+            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=port, database=database, pool_name="pm_vc01", pool_size=5)
             print("Database connection established")
             return
         except Exception as e:
@@ -45,20 +52,39 @@ def shutdown():
     if pool:
         pool.close()
         print("Database connection closed")
+        
+# API queries database for data
+def query(query, parameters=None):
+    if not pool:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    cursor = None
+    result = None
+    try:
+        conn = pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, parameters)
+        if query.strip().upper().startswith("SELECT"):
+            # Fetch database results
+            result = cursor.fetchall()
+        conn.commit()
+    except mariadb.Error as e:
+        print("Error executing SQL query:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return result
 
+# Path to the logfile
+log_file_path = Path("logfile.log")
 
-
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
-@app.get("/", response_class=HTMLResponse)
-async def show_log(request: Request):
-    # Path to the logfile
-    log_file_path = Path("logfile.log")
-    log_content = []
-
+# API route to read log file
+@app.get("/log")
+async def get_log():
     if log_file_path.exists():
-        # Read the log file
         with log_file_path.open("r") as file:
             log_content = file.readlines()
     else:
@@ -66,29 +92,28 @@ async def show_log(request: Request):
         # Write error to log file
         with log_file_path.open("a") as file:
             file.write("[ERROR] Log file not found.\n")
+    return JSONResponse(content={"log": log_content})
 
-    return templates.TemplateResponse("logviewer.html", {"request": request, "log_content": log_content})
-
-# To run the FastAPI app, use the following command in the terminal:
-# uvicorn app:app --reload
-
-
-# API route to fetch name
-@app.get("/api/user")
-async def get_name():
+# API route to add a new calculation log
+@app.post("/calculate")
+async def add_calculation(calculation: str):
     try:
-        query = "SELECT Name FROM users"
-        result = query_name(query)
+        with log_file_path.open("a") as file:
+            file.write(f"[INFO] New calculation: {calculation}\n")
+        return {"message": "Calculation logged successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
+    
+@app.get("/")
+async def history() :
+    try :
+        query = "SELECT * FROM History"
+        result = query(query)
         if not result:
             raise HTTPException(status_code=404, detail="No user found")
-        return {"name": result[0]["Name"]}
+        return {"history": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# API route to fetch API container id
-@app.get("/api/id")
-async def get_id():
-    try:
-        return {"container_id": socket.gethostname()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# To run the FastAPI app, use the following command in the terminal:
+# uvicorn main:app --host 0.0.0.0 --port 3000 --reload
