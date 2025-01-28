@@ -8,6 +8,15 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+
+    body {
+            background-image: url('sea.jpg');  /* Vervang dit pad door het pad naar jouw afbeelding */
+            background-size: cover;  /* Zorgt ervoor dat de afbeelding de hele achtergrond bedekt */
+            background-position: center center;  /* Zorgt ervoor dat de afbeelding in het midden van het scherm wordt uitgelijnd */
+            background-repeat: no-repeat;  /* Voorkomt dat de afbeelding zich herhaalt */
+            height: 100vh;  /* Zorgt ervoor dat de achtergrond minimaal de volledige hoogte van het scherm bedekt */
+            margin: 0;  /* Verwijdert de standaard marge van de body */
+        }
         /* Navbar Styling */
         .navbar {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -122,35 +131,73 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Verkrijg het zwembadvolume uit localStorage, met standaardwaarde 50m³ als niet ingesteld
-        const poolVolume = parseFloat(localStorage.getItem("poolVolume")) || 50;
+        // Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
+        const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
+        const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
     
-        // Functie om formulier in te dienen en waarden op te slaan in localStorage
-        document.getElementById("pool-form").addEventListener("submit", function(e) {
-            e.preventDefault();
-        
-            // Verkrijg de waarden van de invoervelden
-            const ph = parseFloat(document.getElementById("ph").value);
-            const chlorine = parseFloat(document.getElementById("chlorine").value);
-        
-            // Verkrijg de huidige datum
-            const date = new Date().toLocaleDateString();
+        // Event listener voor formulierverzending
+        document.getElementById('pool-form').addEventListener('submit', function(event) {
+            event.preventDefault();
     
-            // Berekeningen voor pH-waarde (dynamisch zwembadvolume)
-            const phAdjustment = 375 * (Math.abs(ph - 7.4) / 0.1) * (poolVolume / 50); // Dynamisch zwembadvolume
-            const chlorineRequired = (poolVolume * 1000) * (2 - chlorine) / 1000; // Dynamisch zwembadvolume
+            // Verkrijg de waarden uit het formulier
+            const ph = parseFloat(document.getElementById('current-ph').value);
+            const chlorine = parseFloat(document.getElementById('current-chlorine').value);
     
-            // Verkrijg huidige history uit localStorage
-            let history = JSON.parse(localStorage.getItem("history")) || [];
-        
-            // Voeg de nieuwe invoer en berekeningen toe aan de geschiedenis
-            history.push({ date, ph, chlorine, phAdjustment, chlorineRequired });
-        
-            // Sla de bijgewerkte geschiedenis op in localStorage
+            // Haal de instellingen voor pH- en chloorconcentraties op uit localStorage
+            const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
+    
+            // Bereken pH-aanpassing (pH+ of pH-)
+            let phPlus = 0;
+            let phMinus = 0;
+    
+            if (ph < 7.2) {
+                // pH-waarde is te laag, dus we moeten pH+ toevoegen
+                const requiredPhPlus = (7.2 - ph) * (poolVolume * phPlusConcentration);
+                phPlus = requiredPhPlus.toFixed(2); // Hoeveelheid pH+ in ml
+            } else if (ph > 7.6) {
+                // pH-waarde is te hoog, dus we moeten pH- toevoegen
+                const requiredPhMinus = (ph - 7.6) * (poolVolume * phMinusConcentration);
+                phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
+            }
+    
+            // Bereken de benodigde hoeveelheid chloor in ml
+            const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
+            let chlorineRequiredMl = 0;
+            if (chlorine < chlorineDesired) {
+                chlorineRequiredMl = (poolVolume * chlorineConcentration) * (chlorineDesired - chlorine); // Benodigde chloor in ml           
+                chlorineRequiredMl = chlorineRequiredMl.toFixed(2);            // Afronden van de chloorwaarde op 2 decimalen
+            } 
+    
+    
+            // Toon de berekende waarde in een pop-up
+            alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
+    
+            // Sla de gegevens op in localStorage en stuur ze door naar history.html
+            const entry = {
+                date: new Date().toLocaleString(),
+                ph: ph,
+                chlorine: chlorine,
+                phPlus: phPlus !== 0 ? `${phPlus}` : "Geen pH+ nodig",
+                phMinus: phMinus !== 0 ? `${phMinus}` : "Geen pH- nodig",
+                chlorineRequiredMl: chlorineRequiredMl !== 0 ? `${chlorineRequiredMl}` : "Geen chloor nodig"
+            };
+    
+            // Verkrijg de bestaande geschiedenis of maak een lege lijst als history niet bestaat
+            const history = JSON.parse(localStorage.getItem("history")) || [];  // Lege array als geen geschiedenis is opgeslagen
+            history.push(entry);
             localStorage.setItem("history", JSON.stringify(history));
-        
+    
+            // Verstuur de gebruiker naar de history-pagina
+            window.location.href = "history.html";
         });
     </script>
+    
+    
+    
+    
+    
     
     
 </body>
