@@ -52,6 +52,31 @@ def shutdown():
     if pool:
         pool.close()
         print("Database connection closed")
+        
+# API queries database for data
+def query(query, parameters=None):
+    if not pool:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+    
+    cursor = None
+    result = None
+    try:
+        conn = pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, parameters)
+        if query.strip().upper().startswith("SELECT"):
+            # Fetch database results
+            result = cursor.fetchall()
+        conn.commit()
+    except mariadb.Error as e:
+        print("Error executing SQL query:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+    return result
 
 # Path to the logfile
 log_file_path = Path("logfile.log")
@@ -78,6 +103,17 @@ async def add_calculation(calculation: str):
         return {"message": "Calculation logged successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
+    
+@app.get("/")
+async def history() :
+    try :
+        query = "SELECT * FROM History"
+        result = query(query)
+        if not result:
+            raise HTTPException(status_code=404, detail="No user found")
+        return {"history": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn main:app --host 0.0.0.0 --port 3000 --reload
