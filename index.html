@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Zwembadwaarden Invoer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+    body {
+            background-image: url('sea.jpg');  /* Vervang dit pad door het pad naar jouw afbeelding */
+            background-size: cover;  /* Zorgt ervoor dat de afbeelding de hele achtergrond bedekt */
+            background-position: center center;  /* Zorgt ervoor dat de afbeelding in het midden van het scherm wordt uitgelijnd */
+            background-repeat: no-repeat;  /* Voorkomt dat de afbeelding zich herhaalt */
+            height: 100vh;  /* Zorgt ervoor dat de achtergrond minimaal de volledige hoogte van het scherm bedekt */
+            margin: 0;  /* Verwijdert de standaard marge van de body */
+        }
+        /* Navbar Styling */
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        .nav-link {
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #0d6efd;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #0056b3 !important;
+        }
+
+        /* Card Styling */
+        .card {
+            border-radius: 10px;
+        }
+        .card-header {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        /* Footer Styling */
+        footer {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">PM</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./logs.html">Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">Settings</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="bg-primary text-white py-4 shadow-sm">
+        <div class="container">
+            <h1 class="h3 text-center">Zwembadbeheer</h1>
+            <p class="text-center mb-0">Invoer van chemische waarden voor optimale waterkwaliteit</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-5 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h5 text-center">Zwembadwaarden Invoeren</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="pool-form">
+                            <!-- pH Waarde Invoer -->
+                            <div class="mb-3">
+                                <label for="current-ph" class="form-label">pH-waarde:</label>
+                                <input type="number" class="form-control" id="current-ph" step="0.1" min="0" required>
+                            </div>
+                            <!-- Chloor Waarde Invoer -->
+                            <div class="mb-3">
+                                <label for="current-chlorine" class="form-label">chloorwaarde (mg/L):</label>
+    <input type="number" class="form-control" id="current-chlorine" step="0.1" min="0" required>
+                            </div>
+                            <!-- Verzendknop -->
+                            <div class="d-grid">
+                                <button id="calculate-button" class="btn btn-primary w-100">Bereken</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3">
+        <div class="container text-center">
+            <p class="mb-1">&copy; 2025 VC01. Alle rechten voorbehouden.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
+        const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
+        const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
+    
+        // Event listener voor formulierverzending
+        document.getElementById('pool-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            // Verkrijg de waarden uit het formulier
+            const ph = parseFloat(document.getElementById('current-ph').value);
+            const chlorine = parseFloat(document.getElementById('current-chlorine').value);
+    
+            // Haal de instellingen voor pH- en chloorconcentraties op uit localStorage
+            const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
+    
+            // Bereken pH-aanpassing (pH+ of pH-)
+            let phPlus = 0;
+            let phMinus = 0;
+    
+            if (ph < 7.2) {
+                // pH-waarde is te laag, dus we moeten pH+ toevoegen
+                const requiredPhPlus = (7.2 - ph) * (poolVolume * phPlusConcentration);
+                phPlus = requiredPhPlus.toFixed(2); // Hoeveelheid pH+ in ml
+            } else if (ph > 7.6) {
+                // pH-waarde is te hoog, dus we moeten pH- toevoegen
+                const requiredPhMinus = (ph - 7.6) * (poolVolume * phMinusConcentration);
+                phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
+            }
+    
+            // Bereken de benodigde hoeveelheid chloor in ml
+            const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
+            let chlorineRequiredMl = 0;
+            if (chlorine < chlorineDesired) {
+                chlorineRequiredMl = (poolVolume * chlorineConcentration) * (chlorineDesired - chlorine); // Benodigde chloor in ml           
+                chlorineRequiredMl = chlorineRequiredMl.toFixed(2);            // Afronden van de chloorwaarde op 2 decimalen
+            } 
+    
+    
+            // Toon de berekende waarde in een pop-up
+            alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
+    
+            // Sla de gegevens op in localStorage en stuur ze door naar history.html
+            const entry = {
+                date: new Date().toLocaleString(),
+                ph: ph,
+                chlorine: chlorine,
+                phPlus: phPlus !== 0 ? `${phPlus}` : "Geen pH+ nodig",
+                phMinus: phMinus !== 0 ? `${phMinus}` : "Geen pH- nodig",
+                chlorineRequiredMl: chlorineRequiredMl !== 0 ? `${chlorineRequiredMl}` : "Geen chloor nodig"
+            };
+    
+            // Verkrijg de bestaande geschiedenis of maak een lege lijst als history niet bestaat
+            const history = JSON.parse(localStorage.getItem("history")) || [];  // Lege array als geen geschiedenis is opgeslagen
+            history.push(entry);
+            localStorage.setItem("history", JSON.stringify(history));
+    
+            // Verstuur de gebruiker naar de history-pagina
+            window.location.href = "history.html";
+        });
+    </script>
+    
+    
+    
+    
+    
+    
+    
+</body>
+</html>
