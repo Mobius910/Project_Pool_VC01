@@ -139,33 +139,30 @@ history.forEach((item, index) => {
     let phPlus = 0;
     let phMinus = 0;
     
-    const gramsPer0_1ph = (75 * poolVolume) / 10; // Aangepaste dosering voor pH per 10 m³
-    const phRequiredMl = (gramsPer0_1ph).toFixed(2); // Hoeveelheid pH+ of pH- in ml per 0,1 pH wijziging
+    const mlPer0_1phPlus = localStorage.getItem("mlPer0_1phPlus") || 20 ; // Aangepaste dosering voor 0,1 pH stijging
+    const mlPer0_1phMin = localStorage.getItem("mlPer0_1phMin") || 20 ; // Aangepaste dosering voor 0,1 pH stijging
     
     if (item.ph < 7.0) {
         // pH-waarde is te laag, dus we moeten pH+ toevoegen
-        const requiredPhPlus = ((7.0 - item.ph) * gramsPer0_1ph) / 0.1; // Aangepaste dosering voor 0,1 pH stijging
+        const requiredPhPlus = ((7.0 - item.ph) * mlPer0_1phPlus);
         phPlus = requiredPhPlus.toFixed(2); // Hoeveelheid pH+ in ml
     } else if (item.ph > 7.6) {
         // pH-waarde is te hoog, dus we moeten pH- toevoegen
-        const requiredPhMinus = ((item.ph - 7.6) * gramsPer0_1ph) / 0.1; // Aangepaste dosering voor 0,1 pH daling
+        const requiredPhMinus = ((item.ph - 7.6) * mlPer0_1phMin);
         phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
     }
 
     // Bereken de benodigde hoeveelheid chloor in ml
     const chlorineCurrent = item.chlorine;  // Huidige chloorwaarde in ppm
-    const chlorineDesired = 3;  // Gewenste chloorwaarde in ppm (bijvoorbeeld 2 ppm)
+    const chlorineDesired = localStorage.getItem("chlorineDesired") || 3;  // Gewenste chloorwaarde in ppm (bijvoorbeeld 2 ppm)
+    const chlorinePer1ppm = localStorage.getItem("chlorinePer1ppm") || 8; // Aangepaste dosering voor 1 ppm stijging
     
-    let chlorineRequiredGrams = 0;
+    let chlorineRequiredMl = 0;
     if (chlorineCurrent < chlorineDesired) {
-        chlorineRequiredGrams = (poolVolume * (chlorineDesired - chlorineCurrent)); // Benodigde chloor in grams
+        chlorineRequiredMl = (poolVolume * chlorinePer1ppm) * (chlorineDesired - chlorineCurrent); // Benodigde chloor in grams
     } else {
-        chlorineRequiredGrams = 0;  // Geen chloor nodig als de waarde boven het gewenste niveau is
+        chlorineRequiredMl = "Chloor boven gewenste waarde";  // Geen chloor nodig als de waarde boven het gewenste niveau is
     }
-
-    // Chloor in ml
-    const chlorineConcentration = 0.15; //moet nog variable worden  // Aangenomen concentratie van de chlooroplossing (voorbeeld 1 gram/ml)
-    const chlorineRequiredMl = (chlorineRequiredGrams / chlorineConcentration).toFixed(2); // Benodigde hoeveelheid in ml
 
     // Voeg de gegevens toe aan de rij
     row.innerHTML = `
