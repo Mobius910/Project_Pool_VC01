@@ -31,7 +31,7 @@ services:
       MYSQL_USER: monitor
       MYSQL_PASSWORD: monitor
     volumes:
-      - /home/pi/project/Project_Pool_VC01/db/data:/var/lib/mysql  # Bind mount for database files
+      - /home/pi/DB_data:/var/lib/mysql  # Bind mount for database files
       - /home/pi/project/Project_Pool_VC01/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Initial SQL script
     ports:
       - "3306:3306"
