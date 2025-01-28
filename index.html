@@ -89,7 +89,7 @@
                         <h2 class="h5 text-center">Zwembadwaarden Invoeren</h2>
                     </div>
                     <div class="card-body">
-                        <form id="pool-form">
+                        <form id="pool-form" action="/" method="post">
                             <!-- pH Waarde Invoer -->
                             <div class="mb-3">
                                 <label for="current-ph" class="form-label">pH-waarde:</label>
@@ -102,7 +102,7 @@
                             </div>
                             <!-- Verzendknop -->
                             <div class="d-grid">
-                                <button id="calculate-button" class="btn btn-primary w-100">Bereken</button>
+                                <button type="submit" id="calculate-button" class="btn btn-primary w-100">Bereken</button>
                             </div>
                         </form>
                     </div>
