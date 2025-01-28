@@ -92,17 +92,17 @@
                         <form id="pool-form">
                             <!-- pH Waarde Invoer -->
                             <div class="mb-3">
-                                <label for="ph" class="form-label">pH-waarde</label>
-                                <input type="number" step="0.01" id="ph" name="ph" class="form-control" placeholder="Bijvoorbeeld: 7.4" required>
+                                <label for="current-ph" class="form-label">pH-waarde:</label>
+                                <input type="number" class="form-control" id="current-ph" step="0.1" min="0" required>
                             </div>
                             <!-- Chloor Waarde Invoer -->
                             <div class="mb-3">
-                                <label for="chlorine" class="form-label">Chloor (mg/L)</label>
-                                <input type="number" step="0.01" id="chlorine" name="chlorine" class="form-control" placeholder="Bijvoorbeeld: 1.5" required>
+                                <label for="current-chlorine" class="form-label">chloorwaarde (mg/L):</label>
+    <input type="number" class="form-control" id="current-chlorine" step="0.1" min="0" required>
                             </div>
                             <!-- Verzendknop -->
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Verstuur Waarden</button>
+                                <button id="calculate-button" class="btn btn-primary w-100">Bereken</button>
                             </div>
                         </form>
                     </div>
@@ -149,8 +149,6 @@
             // Sla de bijgewerkte geschiedenis op in localStorage
             localStorage.setItem("history", JSON.stringify(history));
         
-            // Optioneel: Redirect naar de history-pagina (history.html)
-            window.location.href = "history.html";
         });
     </script>
     
