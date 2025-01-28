@@ -21,11 +21,11 @@ app.add_middleware(
 
 
 # Database configuration
-DB_USER = "monitor"
-DB_PASSWORD = "monitor"
+DB_USER = "root"
+DB_PASSWORD = "1234"
 DB_HOST = "localhost"
 DB_PORT = 3306
-DB_NAME = "pool_monitor_vc01"
+DB_NAME = "Project"
 
 
 
