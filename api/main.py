@@ -1,12 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import socket
-import pymysql
+from dotenv import load_dotenv
+from pathlib import Path
+import mariadb, time, os, requests, socket, pymysql
 from contextlib import closing
 
 
+# Create a FastAPI instance
 app = FastAPI()
+
+# Load environment variables
+load_dotenv()
 
 # Add cors
 origins = ["*"]
@@ -19,6 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Database credentials
+user = os.getenv('MYSQL_USER')
+password = os.getenv('MYSQL_PASSWORD')
+database = os.getenv('MYSQL_DATABASE')
+host = os.getenv('HOST')
+port = os.getenv('PORT')
 
 # Database configuration
 DB_USER = "root"
@@ -27,50 +39,8 @@ DB_HOST = "localhost"
 DB_PORT = 3306
 DB_NAME = "pool_monitor_vc01"
 
-
-
-@app.get("/")
-def read_root():
-    return {"message": "Hello, World!"}
-
-# Get hostname
-@app.get("/hostname")
-def get_hostname():
-    hostname = socket.gethostname()
-    return {"hostname": hostname}
-
-
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-from dotenv import load_dotenv
-from pathlib import Path
-from fastapi.middleware.cors import CORSMiddleware
-import mariadb, time, os, requests
-
-# Create a FastAPI instance
-app = FastAPI()
-
-# Load environment variables
-load_dotenv()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # Allow from any domain
-    allow_credentials=True, # Allow cookies and tokens
-    allow_methods=["POST"], # Only allow POST requests
-    allow_headers=["*"], # allow any header type
-)
-      
 # Global database connection pool
 pool = None
-
-# Database credentials
-user = os.getenv('MYSQL_USER')
-password = os.getenv('MYSQL_PASSWORD')
-database = os.getenv('MYSQL_DATABASE')
-host = os.getenv('HOST')
-port = os.getenv('PORT')
 
 # Database connection
 @app.on_event("startup")
@@ -94,7 +64,7 @@ def shutdown():
     if pool:
         pool.close()
         print("Database connection closed")
-        
+
 # API queries database for data
 def query(query, parameters=None):
     if not pool:
