@@ -27,7 +27,7 @@ services:
     container_name: mariadb
     environment:
       MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: Project
+      MYSQL_DATABASE: pool_monitor_vc01
       MYSQL_USER: monitor
       MYSQL_PASSWORD: monitor
     volumes:
