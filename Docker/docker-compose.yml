@@ -1,0 +1,38 @@
+services:
+  Webserver:
+    image: rtsp/lighttpd
+    container_name: lighttpd
+    ports:
+      - "80:80"
+    volumes:
+      - /home/pi/Project/html:/var/www/html:ro
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+      - fastapi
+
+  fastapi:
+    build: API
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/pi/Project/api/main.py:/code/app/main.py:ro
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: Project
+      MYSQL_USER: monitor
+      MYSQL_PASSWORD: monitor
+    volumes:
+      - /home/pi/project/db/data:/var/lib/mysql  # Bind mount for database files
+      - /home/pi/project/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro  # Initial SQL script
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
