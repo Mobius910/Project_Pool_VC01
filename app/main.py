@@ -1,11 +1,15 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
+from dotenv import load_dotenv
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 import mariadb, time, os
 
 # Create a FastAPI instance
 app = FastAPI()
+
+# Load environment variables
+load_dotenv()
 
 # Add CORS middleware
 app.add_middleware(
@@ -22,6 +26,9 @@ pool = None
 # Database credentials
 user = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
+database = os.getenv('MYSQL_DATABASE')
+host = os.getenv('HOST')
+port = os.getenv('PORT')
 
 # Database connection
 @app.on_event("startup")
@@ -31,7 +38,7 @@ def database_connection():
     retries = 10
     for attempt in range(retries):
         try:
-            pool = mariadb.ConnectionPool(user="#", password="#", host="#", port=3306, database="#", pool_name="#", pool_size=5)
+            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=port, database=database, pool_name="pm_vc01", pool_size=5)
             print("Database connection established")
             return
         except Exception as e:

@@ -10,7 +10,7 @@
     <script>
         async function fetchLog() {
             try {
-                const response = await fetch('/');
+                const response = await fetch('/log');
                 const data = await response.json();
                 const logViewer = document.getElementById('logviewer');
                 logViewer.textContent = data.log.join('\n');
