@@ -226,15 +226,41 @@ class PoolSettings(BaseModel):
     ph_plus_dose: float
     ph_min_dose: float
     chlorine_dose: float
-    notification: int
+    notification_time: int
+    email_receiver: str
 
-@app.post("/update_settings")
-def update_settings(settings: PoolSettings):
+@app.post("/post_settings")
+def post_settings(settings: PoolSettings):
     try:
-        result = query_db("SELECT * FROM Settings LIMIT 1")
-        if not result:
-            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
-        return {"history": result}
+        # Extract values correctly from the Pydantic model
+        volume = settings.pool_volume
+        ph_current = settings.ph_desired
+        chlorine_current = settings.chlorine_desired
+        ph_plus_add = settings.ph_plus_dose
+        ph_min_add = settings.ph_min_dose
+        chlorine_add = settings.chlorine_dose
+        notifi_time = settings.notification_time
+        email = settings.email_receiver
+
+        # update the data into the database
+        query_db(
+            """
+            UPDATE Settings
+            SET pool_volume = ?, 
+                ph_desired = ?, 
+                chlorine_desired = ?, 
+                ph_plus_dose = ?, 
+                ph_min_dose = ?, 
+                chlorine_dose = ?, 
+                notification = ?, 
+                email_receiver = ?
+            LIMIT 1
+            """,
+            (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
+        )
+
+        return {"message": "Settings successfully updated"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
