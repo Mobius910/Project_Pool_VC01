@@ -61,7 +61,7 @@ def shutdown():
         print("Database connection closed")
 
 # API queries database for data
-def query(query, parameters=None):
+def query_db(query, parameters=None):
     if not pool:
         raise HTTPException(status_code=500, detail="Database connection failed")
     
@@ -184,7 +184,7 @@ async def email() :
 @app.get("/get_settings")
 def get_settings():
     try:
-        result = query("SELECT * FROM Settings LIMIT 1")
+        result = query_db("SELECT * FROM Settings LIMIT 1")
         if not result:
             raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
         return result[0]
@@ -219,7 +219,7 @@ def post_settings(settings: PoolSettings):
         email = settings.email_receiver
 
         # update the data into the database
-        query(
+        query_db(
             """
             UPDATE Settings
             SET pool_volume = ?, 
