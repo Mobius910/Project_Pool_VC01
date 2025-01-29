@@ -140,8 +140,8 @@
                                     <option value="2">Om de dag</option>
                                     <option value="3">Om de 2 dagen</option>
                                     <option value="4">Om de 3 dagen</option>
-                                    <option value="4">weekelijks</option>
-                                    <option value="4">maandelijks</option>
+                                    <option value="7">weekelijks</option>
+                                    <option value="30">maandelijks</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -167,25 +167,42 @@
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById("settings-form").addEventListener("submit", function (e) {
+        document.getElementById("settings-form").addEventListener("submit", async function (e) {
             e.preventDefault();
 
             const settings = {
-                poolVolume: document.getElementById("pool-volume").value,
-                desiredPh: document.getElementById("desired-ph").value,
-                desiredChlorine: document.getElementById("desired-chlorine").value,
-                phPlusConcentration: document.getElementById("ph-plus").value,
-                phMinusConcentration: document.getElementById("ph-minus").value,
-                chlorineConcentration: document.getElementById("chlorine").value,
-                notificationFrequency: document.getElementById("notification-frequency").value,
-                notificationEmail: document.getElementById("notificationEmail").value,
+                pool_volume: Number(document.getElementById("pool-volume").value),
+                ph_desired: Number(document.getElementById("desired-ph").value),
+                chlorine_desired: Number(document.getElementById("desired-chlorine").value),
+                ph_plus_dose: Number(document.getElementById("ph-plus").value),
+                ph_min_dose: Number(document.getElementById("ph-minus").value),
+                chlorine_dose: Number(document.getElementById("chlorine").value),
+                notification_time: Number(document.getElementById("notification-frequency").value),
+                email_receiver: document.getElementById("notificationEmail").value
             };
 
-            // Opslaan in localStorage
-            localStorage.setItem("poolSettings", JSON.stringify(settings));
+            try {
+                const response = await fetch("http://192.168.238.189:8000/post_settings", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(settings)
+                });
 
-            alert("Instellingen succesvol opgeslagen!");
-            window.location.href = "index.html";
+                if (!response.ok) {
+                    const errorData = await response.json(); // Try to get more details
+                    console.error("Server response:", errorData);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json(); // Assuming the API returns a JSON response
+
+                window.location.href = "index.html"; // Redirect after successful save
+            } catch (error) {
+                console.error("Fout bij opslaan van instellingen:", error);
+                alert("Er is een fout opgetreden bij het opslaan van de instellingen. Probeer het opnieuw.");
+            }
         });
     </script>
 </body>
