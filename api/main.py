@@ -166,18 +166,9 @@ async def email() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Pydantic model voor zwembadinstellingen
-class PoolSettings(BaseModel):
-    pool_volume: int
-    ph_desired: float
-    chlorine_desired: float
-    ph_plus_dose: float
-    ph_min_dose: float
-    chlorine_dose: float
-    notification: int
 
 # GET endpoint: Huidige instellingen ophalen
-@app.get("/settings")
+@app.get("/get_settings")
 def get_settings():
     try:
         result = query("SELECT * FROM Settings LIMIT 1")
@@ -186,6 +177,49 @@ def get_settings():
         return result[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+
+# Pydantic model voor zwembadinstellingen
+class PoolSettings(BaseModel):
+    pool_volume: int
+    ph_desired: float
+    chlorine_desired: float
+    ph_plus_dose: float
+    ph_min_dose: float
+    chlorine_dose: float
+    notification_time: int
+    email_receiver: str
+
+@app.post("/post_settings")
+def post_settings(settings: PoolSettings):
+    try:
+        # Extract values correctly from the Pydantic model
+        volume = settings.pool_volume
+        ph_current = settings.ph_desired
+        chlorine_current = settings.chlorine_desired
+        ph_plus_add = settings.ph_plus_dose
+        ph_min_add = settings.ph_min_dose
+        chlorine_add = settings.chlorine_dose
+        notifi_time = settings.notification_time
+        email = settings.email_receiver
+
+        # Insert the data into the database
+        query(
+            """
+            INSERT INTO Settings (pool_volume, ph_desired, chlorine_desired, ph_plus_dose, ph_min_dose, chlorine_dose, notification, email_receiver)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
+        )
+
+        return {"message": "Settings successfully updated"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
