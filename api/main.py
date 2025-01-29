@@ -32,7 +32,7 @@ user = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
 database = os.getenv('MYSQL_DATABASE')
 host = os.getenv('HOST')
-port = int(os.getenv('PORT'))
+port = os.getenv('PORT')
 
 # Database configuration
 DB_USER = "root"
@@ -52,7 +52,7 @@ def database_connection():
     retries = 10
     for attempt in range(retries):
         try:
-            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=port, database=database, pool_name="pm_vc01", pool_size=5)
+            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=int(port), database=database, pool_name="pm_vc01", pool_size=5)
             print("Database connection established")
             return
         except Exception as e:
