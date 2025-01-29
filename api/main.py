@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, smtplib, socket, pymysql, datetime
+import mariadb, time, os, requests, smtplib, socket, pymysql
+from datetime import datetime
 from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -100,8 +101,7 @@ async def get_log():
         with log_file_path.open("a") as file:
             file.write("[ERROR] Log file not found.\n")
     return JSONResponse(content={"log": log_content})
-        
-    
+
 # Pydantic model for History
 class history(BaseModel):
     date: datetime
@@ -146,7 +146,6 @@ async def post_history() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/email")
 async def email() :
     try :
@@ -179,21 +178,6 @@ async def email() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# GET endpoint: Huidige instellingen ophalen
-@app.get("/get_settings")
-def get_settings():
-    try:
-        result = query_db("SELECT * FROM Settings LIMIT 1")
-        if not result:
-            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
-        return result[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-
-
 # Pydantic model voor zwembadinstellingen
 class PoolSettings(BaseModel):
     pool_volume: int
@@ -202,45 +186,18 @@ class PoolSettings(BaseModel):
     ph_plus_dose: float
     ph_min_dose: float
     chlorine_dose: float
-    notification_time: int
-    email_receiver: str
+    notification: int
 
-@app.post("/post_settings")
-def post_settings(settings: PoolSettings):
+# GET endpoint: Huidige instellingen ophalen
+@app.get("/settings")
+def get_settings():
     try:
-        # Extract values correctly from the Pydantic model
-        volume = settings.pool_volume
-        ph_current = settings.ph_desired
-        chlorine_current = settings.chlorine_desired
-        ph_plus_add = settings.ph_plus_dose
-        ph_min_add = settings.ph_min_dose
-        chlorine_add = settings.chlorine_dose
-        notifi_time = settings.notification_time
-        email = settings.email_receiver
-
-        # update the data into the database
-        query_db(
-            """
-            UPDATE Settings
-            SET pool_volume = ?, 
-                ph_desired = ?, 
-                chlorine_desired = ?, 
-                ph_plus_dose = ?, 
-                ph_min_dose = ?, 
-                chlorine_dose = ?, 
-                notification = ?, 
-                email_receiver = ?
-            LIMIT 1
-            """,
-            (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
-        )
-
-        return {"message": "Settings successfully updated"}
-    
+        result = query_db("SELECT * FROM Settings LIMIT 1")
+        if not result:
+            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
+        return {"history": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
