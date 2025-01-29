@@ -108,15 +108,35 @@ async def get_log():
     return JSONResponse(content={"log": log_content})
 
 @app.get("/get_history")
-async def get_history() :
-    try :
-        query = "SELECT * FROM History" # env var
+async def get_history():
+    try:
+        query = """
+        SELECT id, Date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine
+        FROM History
+        ORDER BY Date DESC
+        """
         result = query_db(query)
         if not result:
-            raise HTTPException(status_code=404, detail="No user found")
-        return {"history": result}
+            raise HTTPException(status_code=404, detail="No history found")
+
+        # Data formatteren naar JSON-compatibel formaat
+        history_data = [
+            {
+                "id": row["id"],
+                "date": row["Date"].strftime("%Y-%m-%d %H:%M:%S"),  # Datum en tijd formatteren
+                "ph_value": row["ph_value"],
+                "chlorine_ppm": row["chlorine_ppm"],
+                "ph_plus": row["ph_plus"],
+                "ph_min": row["ph_min"],
+                "chlorine": row["chlorine"]
+            }
+            for row in result
+        ]
+
+        return {"history": history_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
     
     
 # Pydantic model for History
