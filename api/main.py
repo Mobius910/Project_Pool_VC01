@@ -146,16 +146,6 @@ async def post_history() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# GET endpoint: Huidige instellingen ophalen
-@app.get("/get_settings")
-def get_settings():
-    try:
-        result = query_db("SELECT * FROM Settings LIMIT 1")
-        if not result:
-            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
-        return result[0]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # Pydantic model voor zwembadinstellingen
 class Email(BaseModel):
@@ -166,10 +156,12 @@ class Email(BaseModel):
 @app.post("/send_email")
 def email(content: Email):
     try :
+        result =  query_db("SELECT email_receiver FROM Settings LIMIT 1")
+
         # Email credentials
         sender_email = os.getenv('REMINDER_EMAIL') # Your Gmail address
         app_password = os.getenv('REMINDER_APP_PASSWORD')  # Your App Password from Google
-        recipient_email = query_db("SELECT email_receiver FROM Settings LIMIT 1")  # Recipient's email address
+        recipient_email =  result[0]["email_receiver"] # Recipient's email address
 
         # Set up the SMTP server
         smtp_server = "smtp.gmail.com"
@@ -194,6 +186,19 @@ def email(content: Email):
             return("Email sent successfully!")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# GET endpoint: Huidige instellingen ophalen
+@app.get("/get_settings")
+def get_settings():
+    try:
+        result = query_db("SELECT * FROM Settings LIMIT 1")
+        if not result:
+            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
+        return result[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Pydantic model voor zwembadinstellingen
 class PoolSettings(BaseModel):
