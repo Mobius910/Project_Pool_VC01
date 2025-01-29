@@ -14,6 +14,14 @@ services:
   fastapi:
     build: api
     container_name: fastapi
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 1234
+      MYSQL_DATABASE: pool_monitor_vc01
+      HOST: mariadb
+      PORT: 3306
+      REMINDER_APP_PASSWORD: "oawc kpys kjbq rwre"
+      REMINDER_EMAIL: "zwembad.VC01@gmail.com"
     ports:
       - "8000:8000"
     volumes:
