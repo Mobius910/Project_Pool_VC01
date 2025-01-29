@@ -12,7 +12,7 @@ services:
       - fastapi
 
   fastapi:
-    build: .
+    build: api
     container_name: fastapi
     ports:
       - "8000:8000"
