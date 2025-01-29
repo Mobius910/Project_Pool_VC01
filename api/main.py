@@ -86,15 +86,6 @@ def query_db(query, parameters=None):
             conn.close()
     return result
 
-# Pydantic model for History
-class history(BaseModel):
-    date: datetime
-    ph_value: float
-    chlorine_ppm: float
-    ph_plus: float
-    ph_min: float
-    chlorine: float
-    log: str  
 
 # Path to the logfile
 log_file_path = Path("logfile.log")
@@ -127,6 +118,16 @@ async def get_history() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+    
+# Pydantic model for History
+class history(BaseModel):
+    date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float
+
 @app.post("/post_history")
 async def post_history() :
     try :
@@ -158,7 +159,7 @@ async def post_history() :
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Pydantic model voor zwembadinstellingen
+# Pydantic model
 class Email(BaseModel):
     subject: str
     message: str
