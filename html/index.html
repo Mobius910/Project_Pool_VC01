@@ -131,9 +131,44 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        //define variables with default values
+
+        // pool settings
+        let poolVolume = 50;
+        let phDesired = 7.2;
+        let chlorineDesired = 3;
+        let phPlusConcentration = 6.66;
+        let phMinusConcentration = 6.66;
+        let chlorineConcentration = 8;
+        // notification settings
+        let notification = 7; 
+        let emailReceiver = 'zwembad.VC01@gmail.com';
+
+        // verkrijg settings van api
+        fetch('http://192.168.238.189:8000/get_settings')
+        .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+        })
+        .then(data => {
+        // change settings with data from api
+        poolVolume = data.pool_volume;
+        phDesired = data.ph_desired;
+        chlorineDesired = data.chlorine_desired;
+        phPlusConcentration = data.ph_plus_dose;
+        phMinusConcentration = data.ph_min_dose;
+        chlorineConcentration = data.chlorine_dose;
+        notification = data.notification;
+        emailReceiver = data.email_receiver;
+        // console.log(poolVolume, phDesired, chlorineDesired, phPlusConcentration, phMinusConcentration, chlorineConcentration, notification, emailReceiver);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
         // Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
-        const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
-        const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
+        // const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
+        // const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
     
         // Event listener voor formulierverzending
         document.getElementById('pool-form').addEventListener('submit', function(event) {
@@ -144,32 +179,31 @@
             const chlorine = parseFloat(document.getElementById('current-chlorine').value);
     
             // Haal de instellingen voor pH- en chloorconcentraties op uit localStorage
-            const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
-            const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
-            const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
+            // const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            // const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
+            // const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
     
             // Bereken pH-aanpassing (pH+ of pH-)
             let phPlus = 0;
             let phMinus = 0;
     
-            if (ph < 7.2) {
+            if (ph < phDesired) {
                 // pH-waarde is te laag, dus we moeten pH+ toevoegen
-                const requiredPhPlus = (7.2 - ph) * (poolVolume * phPlusConcentration);
+                const requiredPhPlus = (phDesired - ph) * (poolVolume * phPlusConcentration);
                 phPlus = requiredPhPlus.toFixed(2); // Hoeveelheid pH+ in ml
-            } else if (ph > 7.6) {
+            } else if (ph > phDesired) {
                 // pH-waarde is te hoog, dus we moeten pH- toevoegen
-                const requiredPhMinus = (ph - 7.6) * (poolVolume * phMinusConcentration);
+                const requiredPhMinus = (ph - phDesired) * (poolVolume * phMinusConcentration);
                 phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
             }
     
             // Bereken de benodigde hoeveelheid chloor in ml
-            const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
+            // const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
             let chlorineRequiredMl = 0;
             if (chlorine < chlorineDesired) {
                 chlorineRequiredMl = (poolVolume * chlorineConcentration) * (chlorineDesired - chlorine); // Benodigde chloor in ml           
                 chlorineRequiredMl = chlorineRequiredMl.toFixed(2);            // Afronden van de chloorwaarde op 2 decimalen
             } 
-    
     
             // Toon de berekende waarde in een pop-up
             alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
@@ -193,12 +227,5 @@
             window.location.href = "history.html";
         });
     </script>
-    
-    
-    
-    
-    
-    
-    
 </body>
 </html>
