@@ -215,7 +215,7 @@ def post_settings(settings: PoolSettings):
                 ph_plus_dose = ?, 
                 ph_min_dose = ?, 
                 chlorine_dose = ?, 
-                notification_time = ?, 
+                notification = ?, 
                 email_receiver = ?
             LIMIT 1
             """,
