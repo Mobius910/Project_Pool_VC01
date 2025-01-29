@@ -129,7 +129,7 @@ class history(BaseModel):
     chlorine: float
 
 @app.post("/post_history")
-async def post_history() :
+async def post_history(history: history):
     try :
         # Extract values correctly from the Pydantic model
         date = history.date
