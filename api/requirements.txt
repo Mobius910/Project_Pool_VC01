@@ -1,8 +1,7 @@
 fastapi[standard]
 uvicorn
-#pymysql
+pymysql
 pydantic
 python-dotenv
 mariadb
-pymysql
 requests
