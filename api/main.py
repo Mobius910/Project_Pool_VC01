@@ -9,7 +9,6 @@ from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-
 # Create a FastAPI instance
 app = FastAPI()
 
@@ -32,7 +31,7 @@ user = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
 database = os.getenv('MYSQL_DATABASE')
 host = os.getenv('HOST')
-port = os.getenv('PORT')
+port = int(os.getenv('PORT'))
 
 
 # Global database connection pool
@@ -46,7 +45,7 @@ def database_connection():
     retries = 10
     for attempt in range(retries):
         try:
-            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=int(port), database=database, pool_name="pm_vc01", pool_size=5)
+            pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=port, database=database, pool_name="pm_vc01", pool_size=5)
             print("Database connection established")
             return
         except Exception as e:
@@ -174,31 +173,6 @@ async def email() :
             server.login(sender_email, app_password)  # Log in to your email account
             server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
             return("Email sent successfully!")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
-
-
-# Pydantic model voor zwembadinstellingen
-class PoolSettings(BaseModel):
-    pool_volume: int
-    ph_desired: float
-    chlorine_desired: float
-    ph_plus_dose: float
-    ph_min_dose: float
-    chlorine_dose: float
-    notification: int
-
-# GET endpoint: Huidige instellingen ophalen
-@app.get("/settings")
-def get_settings():
-    try:
-        result = query("SELECT * FROM Settings LIMIT 1")
-        if not result:
-            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
-        return result[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
