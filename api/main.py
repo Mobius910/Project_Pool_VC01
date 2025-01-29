@@ -10,6 +10,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 # Create a FastAPI instance
 app = FastAPI()
 
@@ -180,6 +181,31 @@ async def email() :
             server.login(sender_email, app_password)  # Log in to your email account
             server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
             print("Email sent successfully!")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+
+# Pydantic model voor zwembadinstellingen
+class PoolSettings(BaseModel):
+    pool_volume: int
+    ph_desired: float
+    chlorine_desired: float
+    ph_plus_dose: float
+    ph_min_dose: float
+    chlorine_dose: float
+    notification: int
+
+# GET endpoint: Huidige instellingen ophalen
+@app.get("/settings")
+def get_settings():
+    try:
+        result = query("SELECT * FROM Settings LIMIT 1")
+        if not result:
+            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
+        return result[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
