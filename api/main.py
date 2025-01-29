@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, smtplib, socket, pymysql
+import mariadb, time, os, requests, smtplib, socket, pymysql, datetime
 from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -61,7 +61,7 @@ def shutdown():
         print("Database connection closed")
 
 # API queries database for data
-def query(query, parameters=None):
+def query_db(query, parameters=None):
     if not pool:
         raise HTTPException(status_code=500, detail="Database connection failed")
     
@@ -103,9 +103,19 @@ async def get_log():
 
     
 
-# API route to 
-@app.post("/")
-async def send_calc():
+@app.get("/history")
+async def get_history() :
+    try :
+        query = "SELECT * FROM History" # env var
+        result = query_db(query)
+        if not result:
+            raise HTTPException(status_code=404, detail="No user found")
+        return {"history": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/history")
+async def post_history() :
     try :
         result = await calculation()
         if not result:
@@ -114,25 +124,22 @@ async def send_calc():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-
 async def calculation():
     try :
        return {"status": "success", "message": f"Data received: test"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
     
-@app.get("/history")
-async def history() :
-    try :
-        query = "SELECT * FROM History" # env var
-        result = query(query)
-        if not result:
-            raise HTTPException(status_code=404, detail="No user found")
-        return {"history": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
+# Pydantic model for History
+class History(BaseModel):
+    Date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float
+    
 
 @app.get("/email")
 async def email() :
@@ -180,10 +187,10 @@ class PoolSettings(BaseModel):
 @app.get("/settings")
 def get_settings():
     try:
-        result = query("SELECT * FROM Settings LIMIT 1")
+        result = query_db("SELECT * FROM Settings LIMIT 1")
         if not result:
             raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
-        return result[0]
+        return {"history": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
