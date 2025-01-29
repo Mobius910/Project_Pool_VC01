@@ -34,12 +34,6 @@ database = os.getenv('MYSQL_DATABASE')
 host = os.getenv('HOST')
 port = os.getenv('PORT')
 
-# Database configuration
-DB_USER = "root"
-DB_PASSWORD = "1234"
-DB_HOST = "localhost"
-DB_PORT = 3306
-DB_NAME = "pool_monitor_vc01"
 
 # Global database connection pool
 pool = None
