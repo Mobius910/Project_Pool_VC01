@@ -205,11 +205,19 @@ def post_settings(settings: PoolSettings):
         notifi_time = settings.notification_time
         email = settings.email_receiver
 
-        # Insert the data into the database
+        # update the data into the database
         query(
             """
-            INSERT INTO Settings (pool_volume, ph_desired, chlorine_desired, ph_plus_dose, ph_min_dose, chlorine_dose, notification, email_receiver)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            UPDATE Settings
+            SET pool_volume = ?, 
+                ph_desired = ?, 
+                chlorine_desired = ?, 
+                ph_plus_dose = ?, 
+                ph_min_dose = ?, 
+                chlorine_dose = ?, 
+                notification_time = ?, 
+                email_receiver = ?
+            LIMIT 1
             """,
             (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
         )
