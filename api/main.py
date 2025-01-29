@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from pathlib import Path
 import mariadb, time, os, requests, socket, pymysql
 from contextlib import closing
-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Create a FastAPI instance
 app = FastAPI()
@@ -145,6 +147,39 @@ async def history() :
         if not result:
             raise HTTPException(status_code=404, detail="No user found")
         return {"history": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/email")
+async def email() :
+    try :
+        # Email credentials
+        sender_email = os.getenv('REMINDER_EMAIL') # Your Gmail address
+        app_password = os.getenv('REMINDER_APP_PASSWORD')  # Your App Password from Google
+        recipient_email = "robbedoes.keppens@gmail.com"  # Recipient's email address
+
+        # Email content
+        subject = "Zwembad Meten"
+        body = "Tijd om de waarden van je zwembad te meten!"
+
+        # Set up the SMTP server
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+
+        # Create the email
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = recipient_email
+        message["Subject"] = subject
+        message.attach(MIMEText(body, "plain"))
+
+        # Connect to the SMTP server
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to secure
+            server.login(sender_email, app_password)  # Log in to your email account
+            server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
+            print("Email sent successfully!")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
