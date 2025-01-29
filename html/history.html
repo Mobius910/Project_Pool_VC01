@@ -141,7 +141,7 @@
 
     <script>
         async function fetchHistory() {
-            const response = await fetch("http://192.168.238.189:8000/history");
+            const response = await fetch("http://192.168.238.189:8000/get_history");
             const history = await response.json();
             const tableBody = document.getElementById("history-table-body");
             tableBody.innerHTML = ""; 
@@ -167,7 +167,7 @@
         }
 
         document.getElementById("clear-history").addEventListener("click", async function () {
-            await fetch("http://192.168.238.189:8000/history", { method: "DELETE" });
+            await fetch("http://192.168.238.189:8000/get_history", { method: "DELETE" });
             fetchHistory();
         });
 
