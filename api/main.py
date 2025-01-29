@@ -86,26 +86,22 @@ def query_db(query, parameters=None):
             conn.close()
     return result
 
+# Pydantic model for History
+class history(BaseModel):
+    date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float
+    log: str  
+
 # Path to the logfile
 log_file_path = Path("logfile.log")
 
-@app.post("/post_log")
-async def post_log():
-    try:
-        body = await requests.json()  # Get the request body
-
-        # Log the request body to a file
-        with open(log_file_path, "a") as f:
-            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": body}, f)
-            f.write("\n")  # New line for each request
-
-        logging.info(f"Logged request: {body}")
-
-        # Return the logged request body
-        return {"logged_body": body}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-        
+# Configure logging
+logging.basicConfig(level=logging.INFO, filename=log_file_path, filemode="a",
+                    format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 # API route to read log file
 @app.get("/get_log")
@@ -119,15 +115,6 @@ async def get_log():
         with log_file_path.open("a") as file:
             file.write("[ERROR] Log file not found.\n")
     return JSONResponse(content={"log": log_content})
-
-# Pydantic model for History
-class history(BaseModel):
-    date: datetime
-    ph_value: float
-    chlorine_ppm: float
-    ph_plus: float
-    ph_min: float
-    chlorine: float   
 
 @app.get("/get_history")
 async def get_history() :
@@ -152,13 +139,19 @@ async def post_history() :
         chlorine = history.chlorine
 
         # Insert the data into the database
-        query_db(
+        result = query_db(
             """
             INSERT INTO History (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
             VALUES (?, ?, ?, ?, ?, ?,
             """,
             (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
         )
+        # Log the request body to a file
+        with open(log_file_path, "a") as f:
+            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
+            f.write("\n")  # New line for each request
+
+        logging.info(f"[INFO] | Logged request: {result}")
 
         return {"message": "History successfully updated"}
     except Exception as e:
