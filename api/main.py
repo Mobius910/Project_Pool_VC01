@@ -147,21 +147,27 @@ async def post_history() :
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/email")
-async def email() :
+# Pydantic model voor zwembadinstellingen
+class Email(BaseModel):
+    subject: str
+    message: str
+
+
+@app.post("/send_email")
+def email(content: Email):
     try :
         # Email credentials
         sender_email = os.getenv('REMINDER_EMAIL') # Your Gmail address
         app_password = os.getenv('REMINDER_APP_PASSWORD')  # Your App Password from Google
-        recipient_email = "robbedoes.keppens@gmail.com"  # Recipient's email address
-
-        # Email content
-        subject = "Zwembad Meten"
-        body = "Tijd om de waarden van je zwembad te meten!"
+        recipient_email = query_db("SELECT email_receiver FROM Settings LIMIT 1")  # Recipient's email address
 
         # Set up the SMTP server
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
+
+        # Email content
+        subject = content.subject
+        body = content.message
 
         # Create the email
         message = MIMEMultipart()
@@ -205,8 +211,8 @@ class PoolSettings(BaseModel):
     notification_time: int
     email_receiver: str
 
-@app.post("/post_settings")
-def post_settings(settings: PoolSettings):
+@app.post("/update_settings")
+def update_settings(settings: PoolSettings):
     try:
         # Extract values correctly from the Pydantic model
         volume = settings.pool_volume
