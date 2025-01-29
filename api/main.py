@@ -9,7 +9,6 @@ from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-
 # Create a FastAPI instance
 app = FastAPI()
 
@@ -34,12 +33,6 @@ database = os.getenv('MYSQL_DATABASE')
 host = os.getenv('HOST')
 port = int(os.getenv('PORT'))
 
-# Database configuration
-DB_USER = "root"
-DB_PASSWORD = "1234"
-DB_HOST = "localhost"
-DB_PORT = 3306
-DB_NAME = "pool_monitor_vc01"
 
 # Global database connection pool
 pool = None
