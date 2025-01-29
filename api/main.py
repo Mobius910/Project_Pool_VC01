@@ -4,12 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, socket, pymysql
+import mariadb, time, os, requests, smtplib, socket, pymysql
 from contextlib import closing
-import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
 
 # Create a FastAPI instance
 app = FastAPI()
@@ -33,14 +31,8 @@ user = os.getenv('MYSQL_USER')
 password = os.getenv('MYSQL_PASSWORD')
 database = os.getenv('MYSQL_DATABASE')
 host = os.getenv('HOST')
-port = os.getenv('PORT')
+port = int(os.getenv('PORT'))
 
-# Database configuration
-DB_USER = "root"
-DB_PASSWORD = "1234"
-DB_HOST = "localhost"
-DB_PORT = 3306
-DB_NAME = "pool_monitor_vc01"
 
 # Global database connection pool
 pool = None
@@ -111,31 +103,21 @@ async def get_log():
 
     
 
-# API route to add a new calculation log
+# API route to 
 @app.post("/")
+async def send_calc():
+    try :
+        result = await calculation()
+        if not result:
+            raise HTTPException(status_code=404, detail="No user found")
+        return {"Status": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
 async def calculation():
     try :
-        form_data = await requests.form()
-        value = form_data.get("value")
-    
-        if not value:
-            raise HTTPException(status_code=400, detail="No data provided")
-        
-        # Here you can process the data or store it
-        print(f"Received data: {value}")
-        
-        # Optionally, send the data to another API (example)
-        # raspberry_pi_url = "http://<raspberry-pi-ip>:<port>/receive-data"
-        # payload = {"value": value}
-        # response = requests.post(raspberry_pi_url, json=payload)
-        
-        return {"status": "success", "message": f"Data received: {value}"}
-        #try: # moet in endpoint om index pagina calc naar raspberry te sturen.
-        #    with log_file_path.open("a") as file:
-        #        file.write(f"[INFO] New calculation: {calculation}\n")
-        #    return {"message": "Calculation logged successfully."}
-        #except Exception as e:
-        #    raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
+       return {"status": "success", "message": f"Data received: test"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
         
@@ -180,10 +162,64 @@ async def email() :
             server.starttls()  # Upgrade the connection to secure
             server.login(sender_email, app_password)  # Log in to your email account
             server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
-            print("Email sent successfully!")
+            return("Email sent successfully!")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# GET endpoint: Huidige instellingen ophalen
+@app.get("/get_settings")
+def get_settings():
+    try:
+        result = query("SELECT * FROM Settings LIMIT 1")
+        if not result:
+            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
+        return result[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+
+# Pydantic model voor zwembadinstellingen
+class PoolSettings(BaseModel):
+    pool_volume: int
+    ph_desired: float
+    chlorine_desired: float
+    ph_plus_dose: float
+    ph_min_dose: float
+    chlorine_dose: float
+    notification_time: int
+    email_receiver: str
+
+@app.post("/post_settings")
+def post_settings(settings: PoolSettings):
+    try:
+        # Extract values correctly from the Pydantic model
+        volume = settings.pool_volume
+        ph_current = settings.ph_desired
+        chlorine_current = settings.chlorine_desired
+        ph_plus_add = settings.ph_plus_dose
+        ph_min_add = settings.ph_min_dose
+        chlorine_add = settings.chlorine_dose
+        notifi_time = settings.notification_time
+        email = settings.email_receiver
+
+        # Insert the data into the database
+        query(
+            """
+            INSERT INTO Settings (pool_volume, ph_desired, chlorine_desired, ph_plus_dose, ph_min_dose, chlorine_dose, notification, email_receiver)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
+        )
+
+        return {"message": "Settings successfully updated"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 # To run the FastAPI app, use the following command in the terminal:
-# uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+# uvicorn main:app --host 0.0.0.0 --port 8000 --reload
