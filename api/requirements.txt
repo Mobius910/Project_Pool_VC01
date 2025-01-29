@@ -2,3 +2,6 @@ fastapi[standard]
 uvicorn
 pymysql
 pydantic
+python-dotenv
+mariadb
+requests
