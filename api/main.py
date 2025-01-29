@@ -10,6 +10,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 # Create a FastAPI instance
 app = FastAPI()
 
@@ -182,6 +183,7 @@ async def email() :
             print("Email sent successfully!")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn main:app --host 0.0.0.0 --port 3000 --reload
