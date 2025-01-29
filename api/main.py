@@ -103,31 +103,21 @@ async def get_log():
 
     
 
-# API route to add a new calculation log
+# API route to 
 @app.post("/")
+async def send_calc():
+    try :
+        result = await calculation()
+        if not result:
+            raise HTTPException(status_code=404, detail="No user found")
+        return {"Status": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
 async def calculation():
     try :
-        form_data = await requests.form()
-        value = form_data.get("value")
-    
-        if not value:
-            raise HTTPException(status_code=400, detail="No data provided")
-        
-        # Here you can process the data or store it
-        print(f"Received data: {value}")
-        
-        # Optionally, send the data to another API (example)
-        # raspberry_pi_url = "http://<raspberry-pi-ip>:<port>/receive-data"
-        # payload = {"value": value}
-        # response = requests.post(raspberry_pi_url, json=payload)
-        
-        return {"status": "success", "message": f"Data received: {value}"}
-        #try: # moet in endpoint om index pagina calc naar raspberry te sturen.
-        #    with log_file_path.open("a") as file:
-        #        file.write(f"[INFO] New calculation: {calculation}\n")
-        #    return {"message": "Calculation logged successfully."}
-        #except Exception as e:
-        #    raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
+       return {"status": "success", "message": f"Data received: test"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
         
@@ -176,5 +166,26 @@ async def email() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Pydantic model voor zwembadinstellingen
+class PoolSettings(BaseModel):
+    pool_volume: int
+    ph_desired: float
+    chlorine_desired: float
+    ph_plus_dose: float
+    ph_min_dose: float
+    chlorine_dose: float
+    notification: int
+
+# GET endpoint: Huidige instellingen ophalen
+@app.get("/settings")
+def get_settings():
+    try:
+        result = query("SELECT * FROM Settings LIMIT 1")
+        if not result:
+            raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
+        return result[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # To run the FastAPI app, use the following command in the terminal:
-# uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+# uvicorn main:app --host 0.0.0.0 --port 8000 --reload
