@@ -195,6 +195,12 @@ def email(content: Email):
             server.login(sender_email, app_password)  # Log in to your email account
             server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
             return("Email sent successfully!")
+        # Log the request body to a file
+        with open(log_file_path, "a") as f:
+            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
+            f.write("\n")  # New line for each request
+
+        logging.info(f"[INFO] | Reminder mail is send!: {result}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -236,7 +242,7 @@ def post_settings(settings: PoolSettings):
         email = settings.email_receiver
 
         # update the data into the database
-        query_db(
+        result = query_db(
             """
             UPDATE Settings
             SET pool_volume = ?, 
@@ -251,6 +257,13 @@ def post_settings(settings: PoolSettings):
             """,
             (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
         )
+        
+        # Log the request body to a file
+        with open(log_file_path, "a") as f:
+            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
+            f.write("\n")  # New line for each request
+
+        logging.info(f"[INFO] | Settings updated!: Zwembad Volume : {volume}, PH Huidig : {ph_current},\n Chloor Huidig : {chlorine_current}, PH+ Toevoegen : {ph_plus_add},\n PH- Toevoegen : {ph_min_add}, Aantal Chloor Toevoegen : {chlorine_add},\n Melding sturen om de {notifi_time} dagen,\n Melding wordt verstuurt naar : {email}")
 
         return {"message": "Settings successfully updated"}
     

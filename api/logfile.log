@@ -1,2 +1,16 @@
 {"timestamp": "2025-01-29T13:19:48.809653", "body": []}
 2025-01-29 14:19:48 - Logged request: []
+{"timestamp": "2025-01-29T13:53:19.002139", "body": null}
+2025-01-29 14:53:19 - [INFO] | Settings updated!: None
+{"timestamp": "2025-01-29T13:57:20.289226", "body": null}
+2025-01-29 14:57:20 - [INFO] | Settings updated!: pool_volume : 0
+{"timestamp": "2025-01-29T14:11:35.062868", "body": null}
+2025-01-29 15:11:35 - [INFO] | Settings updated!
+{"timestamp": "2025-01-29T14:12:54.392081", "body": null}
+2025-01-29 15:12:54 - [INFO] | Settings updated!: Zwembad Volume : 0, PH Huidig : 0.0, Chloor Huidig : 0.0, PH+ Toevoegen : 0.0, PH- Toevoegen : 0.0, Aantal Chloor Toevoegen : 0.0, Melding sturen om de 0 dagen, Melding wordt verstuurt naar : string
+{"timestamp": "2025-01-29T14:15:42.151507", "body": null}
+2025-01-29 15:15:42 - [INFO] | Settings updated!: Zwembad Volume : 0, PH Huidig : 0.0,
+ Chloor Huidig : 0.0, PH+ Toevoegen : 0.0,
+ PH- Toevoegen : 0.0, Aantal Chloor Toevoegen : 0.0,
+ Melding sturen om de 0 dagen,
+ Melding wordt verstuurt naar : string
