@@ -140,38 +140,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Verkrijg de opgeslagen geschiedenis uit localStorage
-        const history = JSON.parse(localStorage.getItem("history")) || [];
-        console.log("Geschiedenis uit localStorage:", history);
+        async function fetchHistory() {
+            const response = await fetch("http://localhost:8000/history");
+            const history = await response.json();
+            const tableBody = document.getElementById("history-table-body");
+            tableBody.innerHTML = ""; 
 
-        const tableBody = document.querySelector("tbody");
+            if (history.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='7' class='text-center'>Geen data beschikbaar</td></tr>";
+                return;
+            }
 
-        // Voeg elke logitem toe aan de tabel
-        history.forEach((item, index) => {
-            const row = document.createElement("tr");
+            history.forEach((item, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.date}</td>
+                    <td>${item.ph}</td>
+                    <td>${item.chlorine}</td>
+                    <td>${item.ph_plus}</td>
+                    <td>${item.ph_minus}</td>
+                    <td>${item.chlorine_required_ml}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
 
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.date}</td>
-                <td>${item.ph}</td>
-                <td>${item.chlorine}</td>
-                <td>${item.phPlus}</td>
-                <td>${item.phMinus}</td>
-                <td>${item.chlorineRequiredMl}</td>
-            `;
-
-            tableBody.appendChild(row);
+        document.getElementById("clear-history").addEventListener("click", async function () {
+            await fetch("http://localhost:8000/history", { method: "DELETE" });
+            fetchHistory();
         });
 
-
-        // Voeg een event listener toe aan de verwijder-knop
-        document.getElementById("clear-history").addEventListener("click", function () {
-            // Verwijder de geschiedenis uit localStorage
-            localStorage.removeItem("history");
-
-            // Herlaad de pagina om de tabel te updaten
-            window.location.reload();
-        });
+        fetchHistory();
     </script>
 
 
