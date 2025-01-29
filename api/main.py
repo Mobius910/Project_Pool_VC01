@@ -110,8 +110,19 @@ async def get_log():
 
     
 
-# API route to add a new calculation log
+# API route to 
 @app.post("/")
+async def send_calc():
+    try :
+        calculation()
+        result = query(query)
+        if not result:
+            raise HTTPException(status_code=404, detail="No user found")
+        return {"Status": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
 async def calculation():
     try :
         form_data = await requests.form()
