@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,27 +9,36 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-
-    body {
-            background-image: url('sea.jpg');  /* Vervang dit pad door het pad naar jouw afbeelding */
-            background-size: cover;  /* Zorgt ervoor dat de afbeelding de hele achtergrond bedekt */
-            background-position: center center;  /* Zorgt ervoor dat de afbeelding in het midden van het scherm wordt uitgelijnd */
-            background-repeat: no-repeat;  /* Voorkomt dat de afbeelding zich herhaalt */
-            height: 100vh;  /* Zorgt ervoor dat de achtergrond minimaal de volledige hoogte van het scherm bedekt */
-            margin: 0;  /* Verwijdert de standaard marge van de body */
+        body {
+            background-image: url('sea.jpg');
+            /* Vervang dit pad door het pad naar jouw afbeelding */
+            background-size: cover;
+            /* Zorgt ervoor dat de afbeelding de hele achtergrond bedekt */
+            background-position: center center;
+            /* Zorgt ervoor dat de afbeelding in het midden van het scherm wordt uitgelijnd */
+            background-repeat: no-repeat;
+            /* Voorkomt dat de afbeelding zich herhaalt */
+            height: 100vh;
+            /* Zorgt ervoor dat de achtergrond minimaal de volledige hoogte van het scherm bedekt */
+            margin: 0;
+            /* Verwijdert de standaard marge van de body */
         }
+
         /* Navbar Styling */
         .navbar {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .navbar-brand {
             font-weight: bold;
             font-size: 1.25rem;
         }
+
         .nav-link {
             font-size: 1rem;
             transition: color 0.3s ease;
         }
+
         .nav-link:hover {
             color: #0d6efd;
         }
@@ -42,6 +52,7 @@
         .card {
             border-radius: 10px;
         }
+
         .card-header {
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
@@ -53,13 +64,15 @@
         }
     </style>
 </head>
+
 <body class="bg-light d-flex flex-column min-vh-100">
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">PM</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -107,7 +120,8 @@
                             <!-- Chloor Waarde Invoer -->
                             <div class="mb-3">
                                 <label for="current-chlorine" class="form-label">chloorwaarde (mg/L):</label>
-    <input type="number" class="form-control" id="current-chlorine" step="0.1" min="0" required>
+                                <input type="number" class="form-control" id="current-chlorine" step="0.1" min="0"
+                                    required>
                             </div>
                             <!-- Verzendknop -->
                             <div class="d-grid">
@@ -141,52 +155,52 @@
         let phMinusConcentration = 6.66;
         let chlorineConcentration = 8;
         // notification settings
-        let notification = 7; 
+        let notification = 7;
         let emailReceiver = 'zwembad.VC01@gmail.com';
 
         // verkrijg settings van api
         fetch('http://192.168.238.189:8000/get_settings')
-        .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-        })
-        .then(data => {
-        // change settings with data from api
-        poolVolume = data.pool_volume;
-        phDesired = data.ph_desired;
-        chlorineDesired = data.chlorine_desired;
-        phPlusConcentration = data.ph_plus_dose;
-        phMinusConcentration = data.ph_min_dose;
-        chlorineConcentration = data.chlorine_dose;
-        notification = data.notification;
-        emailReceiver = data.email_receiver;
-        // console.log(poolVolume, phDesired, chlorineDesired, phPlusConcentration, phMinusConcentration, chlorineConcentration, notification, emailReceiver);
-        })
-        .catch(error => console.error('Error fetching data:', error));
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // change settings with data from api
+                poolVolume = data.pool_volume;
+                phDesired = data.ph_desired;
+                chlorineDesired = data.chlorine_desired;
+                phPlusConcentration = data.ph_plus_dose;
+                phMinusConcentration = data.ph_min_dose;
+                chlorineConcentration = data.chlorine_dose;
+                notification = data.notification;
+                emailReceiver = data.email_receiver;
+                // console.log(poolVolume, phDesired, chlorineDesired, phPlusConcentration, phMinusConcentration, chlorineConcentration, notification, emailReceiver);
+            })
+            .catch(error => console.error('Error fetching data:', error));
 
         // Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
         // const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
         // const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
-    
+
         // Event listener voor formulierverzending
-        document.getElementById('pool-form').addEventListener('submit', function(event) {
+        document.getElementById('pool-form').addEventListener('submit', function (event) {
             event.preventDefault();
-    
+
             // Verkrijg de waarden uit het formulier
             const ph = parseFloat(document.getElementById('current-ph').value);
             const chlorine = parseFloat(document.getElementById('current-chlorine').value);
-    
+
             // Haal de instellingen voor pH- en chloorconcentraties op uit localStorage
             // const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
             // const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
             // const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
-    
+
             // Bereken pH-aanpassing (pH+ of pH-)
             let phPlus = 0;
             let phMinus = 0;
-    
+
             if (ph < phDesired) {
                 // pH-waarde is te laag, dus we moeten pH+ toevoegen
                 const requiredPhPlus = (phDesired - ph) * (poolVolume * phPlusConcentration);
@@ -196,18 +210,18 @@
                 const requiredPhMinus = (ph - phDesired) * (poolVolume * phMinusConcentration);
                 phMinus = requiredPhMinus.toFixed(2); // Hoeveelheid pH- in ml
             }
-    
+
             // Bereken de benodigde hoeveelheid chloor in ml
             // const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
             let chlorineRequiredMl = 0;
             if (chlorine < chlorineDesired) {
                 chlorineRequiredMl = (poolVolume * chlorineConcentration) * (chlorineDesired - chlorine); // Benodigde chloor in ml           
                 chlorineRequiredMl = chlorineRequiredMl.toFixed(2);            // Afronden van de chloorwaarde op 2 decimalen
-            } 
-    
+            }
+
             // Toon de berekende waarde in een pop-up
             alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
-    
+
             // Sla de gegevens op in localStorage en stuur ze door naar history.html
             const entry = {
                 date: new Date().toLocaleString(),
@@ -217,15 +231,16 @@
                 phMinus: phMinus !== 0 ? `${phMinus}` : "Geen pH- nodig",
                 chlorineRequiredMl: chlorineRequiredMl !== 0 ? `${chlorineRequiredMl}` : "Geen chloor nodig"
             };
-    
+
             // Verkrijg de bestaande geschiedenis of maak een lege lijst als history niet bestaat
             const history = JSON.parse(localStorage.getItem("history")) || [];  // Lege array als geen geschiedenis is opgeslagen
             history.push(entry);
             localStorage.setItem("history", JSON.stringify(history));
-    
+
             // Verstuur de gebruiker naar de history-pagina
             window.location.href = "history.html";
         });
     </script>
 </body>
+
 </html>
