@@ -146,23 +146,24 @@
             const response = await fetch("http://192.168.238.189:8000/get_history");
             const history = await response.json();
             const tableBody = document.getElementById("history-table-body");
-            tableBody.innerHTML = ""; 
+            tableBody.innerHTML = "";
+            const historyData = history.history;  // Aangepaste referentie naar de juiste array
+
 
             if (history.length === 0) {
                 tableBody.innerHTML = "<tr><td colspan='7' class='text-center'>Geen data beschikbaar</td></tr>";
                 return;
             }
-
-            history.forEach((item, index) => {
+            historyData.forEach((item, index) => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${item.date}</td>
-                    <td>${item.ph}</td>
-                    <td>${item.chlorine}</td>
+                    <td>${item.ph_value}</td>
+                    <td>${item.chlorine_ppm}</td>
                     <td>${item.ph_plus}</td>
-                    <td>${item.ph_minus}</td>
-                    <td>${item.chlorine_required_ml}</td>
+                    <td>${item.ph_min}</td>
+                    <td>${item.chlorine}</td>
                 `;
                 tableBody.appendChild(row);
             });
