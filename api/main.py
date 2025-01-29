@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, smtplib, socket, pymysql
+import mariadb, time, os, requests, smtplib, socket, pymysql, datetime
 from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -61,7 +61,7 @@ def shutdown():
         print("Database connection closed")
 
 # API queries database for data
-def query(query, parameters=None):
+def query_db(query, parameters=None):
     if not pool:
         raise HTTPException(status_code=500, detail="Database connection failed")
     
@@ -100,55 +100,74 @@ async def get_log():
         with log_file_path.open("a") as file:
             file.write("[ERROR] Log file not found.\n")
     return JSONResponse(content={"log": log_content})
-
-    
-
-# API route to 
-@app.post("/")
-async def send_calc():
-    try :
-        result = await calculation()
-        if not result:
-            raise HTTPException(status_code=404, detail="No user found")
-        return {"Status": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
-async def calculation():
-    try :
-       return {"status": "success", "message": f"Data received: test"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
         
     
+# Pydantic model for History
+class history(BaseModel):
+    date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float   
+
 @app.get("/history")
-async def history() :
+async def get_history() :
     try :
         query = "SELECT * FROM History" # env var
-        result = query(query)
+        result = query_db(query)
         if not result:
             raise HTTPException(status_code=404, detail="No user found")
         return {"history": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/history")
+async def post_history() :
+    try :
+        # Extract values correctly from the Pydantic model
+        date = history.date
+        ph_value = history.ph_value
+        chlorine_ppm = history.chlorine_ppm
+        ph_plus = history.ph_plus
+        ph_min = history.ph_min
+        chlorine = history.chlorine
+
+        # Insert the data into the database
+        query_db(
+            """
+            INSERT INTO History (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
+            VALUES (?, ?, ?, ?, ?, ?,
+            """,
+            (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
+        )
+
+        return {"message": "History successfully updated"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/email")
-async def email() :
+# Pydantic model voor zwembadinstellingen
+class Email(BaseModel):
+    subject: str
+    message: str
+
+
+@app.post("/send_email")
+def email(content: Email):
     try :
         # Email credentials
         sender_email = os.getenv('REMINDER_EMAIL') # Your Gmail address
         app_password = os.getenv('REMINDER_APP_PASSWORD')  # Your App Password from Google
-        recipient_email = "robbedoes.keppens@gmail.com"  # Recipient's email address
-
-        # Email content
-        subject = "Zwembad Meten"
-        body = "Tijd om de waarden van je zwembad te meten!"
+        recipient_email = query_db("SELECT email_receiver FROM Settings LIMIT 1")  # Recipient's email address
 
         # Set up the SMTP server
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
+
+        # Email content
+        subject = content.subject
+        body = content.message
 
         # Create the email
         message = MIMEMultipart()
@@ -171,7 +190,7 @@ async def email() :
 @app.get("/get_settings")
 def get_settings():
     try:
-        result = query("SELECT * FROM Settings LIMIT 1")
+        result = query_db("SELECT * FROM Settings LIMIT 1")
         if not result:
             raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
         return result[0]
@@ -192,8 +211,8 @@ class PoolSettings(BaseModel):
     notification_time: int
     email_receiver: str
 
-@app.post("/post_settings")
-def post_settings(settings: PoolSettings):
+@app.post("/update_settings")
+def update_settings(settings: PoolSettings):
     try:
         # Extract values correctly from the Pydantic model
         volume = settings.pool_volume
@@ -206,7 +225,7 @@ def post_settings(settings: PoolSettings):
         email = settings.email_receiver
 
         # update the data into the database
-        query(
+        query_db(
             """
             UPDATE Settings
             SET pool_volume = ?, 
