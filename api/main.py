@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, smtplib, socket, pymysql
+import mariadb, time, os, requests, smtplib, socket, pymysql, json, logging
 from datetime import datetime
 from contextlib import closing
 from email.mime.text import MIMEText
@@ -89,8 +89,26 @@ def query_db(query, parameters=None):
 # Path to the logfile
 log_file_path = Path("logfile.log")
 
+@app.post("/post_log")
+async def post_log():
+    try:
+        body = await requests.json()  # Get the request body
+
+        # Log the request body to a file
+        with open(log_file_path, "a") as f:
+            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": body}, f)
+            f.write("\n")  # New line for each request
+
+        logging.info(f"Logged request: {body}")
+
+        # Return the logged request body
+        return {"logged_body": body}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
+
 # API route to read log file
-@app.get("/log")
+@app.get("/get_log")
 async def get_log():
     if log_file_path.exists():
         with log_file_path.open("r") as file:
@@ -111,7 +129,7 @@ class history(BaseModel):
     ph_min: float
     chlorine: float   
 
-@app.get("/history")
+@app.get("/get_history")
 async def get_history() :
     try :
         query = "SELECT * FROM History" # env var
@@ -122,7 +140,7 @@ async def get_history() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.post("/history")
+@app.post("/post_history")
 async def post_history() :
     try :
         # Extract values correctly from the Pydantic model
