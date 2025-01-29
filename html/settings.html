@@ -131,8 +131,10 @@
                                     <option value="4">maandelijks</option>
                                 </select>
                             </div>
-
-                            
+                            <div class="mb-3">
+                                <label for="notificationEmail" class="form-label">Email voor herinneringen</label>
+                                <input type="email" class="form-control" id="notificationEmail" required>
+                            </div>
 
                             <button type="submit" class="btn btn-primary w-100">Instellingen Opslaan</button>
                         </form>
@@ -163,7 +165,7 @@
                 phMinusConcentration: document.getElementById("ph-minus").value,
                 chlorineConcentration: document.getElementById("chlorine").value,
                 notificationFrequency: document.getElementById("notification-frequency").value,
-                
+                notificationEmail: document.getElementById("notificationEmail").value,
             };
 
             // Opslaan in localStorage
