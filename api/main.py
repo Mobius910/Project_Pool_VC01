@@ -143,7 +143,7 @@ async def post_history(history: history):
         result = query_db(
             """
             INSERT INTO History (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
-            VALUES (?, ?, ?, ?, ?, ?,
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
         )
