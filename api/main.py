@@ -114,8 +114,7 @@ async def get_log():
 @app.post("/")
 async def send_calc():
     try :
-        calculation()
-        result = query(query)
+        result = await calculation()
         if not result:
             raise HTTPException(status_code=404, detail="No user found")
         return {"Status": result}
@@ -125,27 +124,7 @@ async def send_calc():
 
 async def calculation():
     try :
-        form_data = await requests.form()
-        value = form_data.get("value")
-    
-        if not value:
-            raise HTTPException(status_code=400, detail="No data provided")
-        
-        # Here you can process the data or store it
-        print(f"Received data: {value}")
-        
-        # Optionally, send the data to another API (example)
-        # raspberry_pi_url = "http://<raspberry-pi-ip>:<port>/receive-data"
-        # payload = {"value": value}
-        # response = requests.post(raspberry_pi_url, json=payload)
-        
-        return {"status": "success", "message": f"Data received: {value}"}
-        #try: # moet in endpoint om index pagina calc naar raspberry te sturen.
-        #    with log_file_path.open("a") as file:
-        #        file.write(f"[INFO] New calculation: {calculation}\n")
-        #    return {"message": "Calculation logged successfully."}
-        #except Exception as e:
-        #    raise HTTPException(status_code=500, detail=f"Error writing to log: {e}")
+       return {"status": "success", "message": f"Data received: test"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
         
@@ -194,10 +173,6 @@ async def email() :
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-
-
-
 # Pydantic model voor zwembadinstellingen
 class PoolSettings(BaseModel):
     pool_volume: int
@@ -220,4 +195,4 @@ def get_settings():
         raise HTTPException(status_code=500, detail=str(e))
 
 # To run the FastAPI app, use the following command in the terminal:
-# uvicorn main:app --host 0.0.0.0 --port 3000 --reload
+# uvicorn main:app --host 0.0.0.0 --port 8000 --reload
