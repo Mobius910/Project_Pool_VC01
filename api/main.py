@@ -38,6 +38,14 @@ port = int(os.getenv('PORT'))
 # Global database connection pool
 pool = None
 
+# Path to the logfile
+log_file_path = Path("logfile.log")
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, filename=log_file_path, filemode="a",
+                    format="%(asctime)s - [%(levelname)s] - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+
+
 # Database connection
 @app.on_event("startup")
 def database_connection():
@@ -47,11 +55,14 @@ def database_connection():
     for attempt in range(retries):
         try:
             pool = mariadb.ConnectionPool(user=user, password=password, host=host, port=port, database=database, pool_name="pm_vc01", pool_size=5)
+            logging.info(f"Database connection established")
             print("Database connection established")
             return
         except Exception as e:
+            logging.error(f"Database connection failed : {e}. Retrying {attempt + 1}/{retries}")
             print(f"Database connection failed: {e}. Retrying {attempt + 1}/{retries}")
             time.sleep(30)
+    logging.error(f"Database not reachable after retries...")
     raise Exception("Database not reachable after retries")
 
 # Disconnects database connection when API is turned off.
@@ -64,6 +75,7 @@ def shutdown():
 # API queries database for data
 def query_db(query, parameters=None):
     if not pool:
+        logging.error(f"Database connection failed during SQL querying due to Database connection pool failure...")
         raise HTTPException(status_code=500, detail="Database connection failed")
     
     cursor = None
@@ -78,6 +90,7 @@ def query_db(query, parameters=None):
         conn.commit()
     except mariadb.Error as e:
         print("Error executing SQL query:", e)
+        logging.error(f"Error executing SQL query : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         if cursor:
@@ -86,13 +99,14 @@ def query_db(query, parameters=None):
             conn.close()
     return result
 
-
-# Path to the logfile
-log_file_path = Path("logfile.log")
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, filename=log_file_path, filemode="a",
-                    format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+# Pydantic model for History
+class history(BaseModel):
+    date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float 
 
 # API route to read log file
 @app.get("/get_log")
@@ -117,6 +131,7 @@ async def get_history():
         """
         result = query_db(query)
         if not result:
+            logging.error(f"Failed to retrieve history : No history was found in database or could be retrieved.")
             raise HTTPException(status_code=404, detail="No history found")
 
         # Data formatteren naar JSON-compatibel formaat
@@ -135,6 +150,7 @@ async def get_history():
 
         return {"history": history_data}
     except Exception as e:
+        logging.error(f"Failed to retrieve history : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
     
@@ -160,22 +176,24 @@ async def post_history(history: history):
         chlorine = history.chlorine
 
         # Insert the data into the database
-        result = query_db(
+        query_db(
             """
             INSERT INTO History (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
         )
-        # Log the request body to a file
-        with open(log_file_path, "a") as f:
-            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
-            f.write("\n")  # New line for each request
 
-        logging.info(f"[INFO] | Logged request: {result}")
+        logging.info(
+        f"History updated! \n"
+        f"Datum : {date}, PH Waarde : {ph_value}, Chloor Waarde : {chlorine_ppm} mg per liter, \n"
+        f"PH+ Toevoegen: {ph_plus} ml, PH- Toevoegen: {ph_min} ml, \n"
+        f"Hoeveelheid Chloor dat zal toegevoegd worden : {chlorine}"
+        )
 
         return {"message": "History successfully updated"}
     except Exception as e:
+        logging.error(f"Failed to send calculations : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -216,13 +234,10 @@ def email(content: Email):
             server.login(sender_email, app_password)  # Log in to your email account
             server.sendmail(sender_email, recipient_email, message.as_string())  # Send email
             return("Email sent successfully!")
-        # Log the request body to a file
-        with open(log_file_path, "a") as f:
-            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
-            f.write("\n")  # New line for each request
 
-        logging.info(f"[INFO] | Reminder mail is send!: {result}")
+        logging.info(f"Reminder mail send to the following recipient : {recipient_email}")
     except Exception as e:
+        logging.error(f"Failed to send reminder mail : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -232,9 +247,11 @@ def get_settings():
     try:
         result = query_db("SELECT * FROM Settings LIMIT 1")
         if not result:
+            logging.error(f"Failed to retrieve settings : No settings were found in database or could be retrieved.")
             raise HTTPException(status_code=404, detail="Geen instellingen gevonden")
         return result[0]
     except Exception as e:
+        logging.error(f"Failed to retrieve settings : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -263,7 +280,7 @@ def post_settings(settings: PoolSettings):
         email = settings.email_receiver
 
         # update the data into the database
-        result = query_db(
+        query_db(
             """
             UPDATE Settings
             SET pool_volume = ?, 
@@ -279,16 +296,17 @@ def post_settings(settings: PoolSettings):
             (volume, ph_current, chlorine_current, ph_plus_add, ph_min_add, chlorine_add, notifi_time, email)
         )
         
-        # Log the request body to a file
-        with open(log_file_path, "a") as f:
-            json.dump({"timestamp": datetime.utcnow().isoformat(), "body": result}, f)
-            f.write("\n")  # New line for each request
-
-        logging.info(f"[INFO] | Settings updated!: Zwembad Volume : {volume}, PH Huidig : {ph_current},\n Chloor Huidig : {chlorine_current}, PH+ Toevoegen : {ph_plus_add},\n PH- Toevoegen : {ph_min_add}, Aantal Chloor Toevoegen : {chlorine_add},\n Melding sturen om de {notifi_time} dagen,\n Melding wordt verstuurt naar : {email}")
+        logging.info(
+        f"Settings updated! \n"
+        f"Zwembad Volume: {volume}, PH Huidig: {ph_current}, Chloor Huidig: {chlorine_current}, \n"
+        f"PH+ Toevoegen: {ph_plus_add}, PH- Toevoegen: {ph_min_add}, \n"
+        f"Aantal Chloor Toevoegen: {chlorine_add}, \n"
+        f"Melding sturen om de {notifi_time} dagen, Melding wordt verstuurd naar: {email}"
+        )
 
         return {"message": "Settings successfully updated"}
-    
     except Exception as e:
+        logging.error(f"Failed to update settings: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # To run the FastAPI app, use the following command in the terminal:

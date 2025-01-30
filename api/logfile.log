@@ -14,3 +14,31 @@
  PH- Toevoegen : 0.0, Aantal Chloor Toevoegen : 0.0,
  Melding sturen om de 0 dagen,
  Melding wordt verstuurt naar : string
+{"timestamp": "2025-01-30T07:52:04.728625", "body": null}
+2025-01-30 08:52:04 - INFO - [INFO] | Settings updated! Zwembad Volume: 0, PH Huidig: 0.0, Chloor Huidig: 0.0, PH+ Toevoegen: 0.0, PH- Toevoegen: 0.0, Aantal Chloor Toevoegen: 0.0, Melding sturen om de 0 dagen, Melding wordt verstuurd naar: string
+{"timestamp": "2025-01-30T07:53:40.461371", "body": null}
+2025-01-30 08:53:40 - [INFO] - Settings updated! Zwembad Volume: 0, PH Huidig: 0.0, Chloor Huidig: 0.0, PH+ Toevoegen: 0.0, PH- Toevoegen: 0.0, Aantal Chloor Toevoegen: 0.0, Melding sturen om de 0 dagen, Melding wordt verstuurd naar: string
+2025-01-30 08:54:24 - [INFO] - Settings updated! Zwembad Volume: 0, PH Huidig: 0.0, Chloor Huidig: 0.0, PH+ Toevoegen: 0.0, PH- Toevoegen: 0.0, Aantal Chloor Toevoegen: 0.0, Melding sturen om de 0 dagen, Melding wordt verstuurd naar: string
+2025-01-30 08:55:58 - [INFO] - Settings updated! 
+Zwembad Volume: 0, PH Huidig: 0.0, Chloor Huidig: 0.0, 
+PH+ Toevoegen: 0.0, PH- Toevoegen: 0.0, 
+Aantal Chloor Toevoegen: 0.0, 
+Melding sturen om de 0 dagen, Melding wordt verstuurd naar: string
+2025-01-30 09:42:22 - [INFO] - Database connection established
+2025-01-30 09:43:28 - [INFO] - Database connection established
+2025-01-30 09:43:30 - [INFO] - Database connection established
+2025-01-30 09:43:40 - [INFO] - Settings updated! 
+Zwembad Volume: 0, PH Huidig: 0.0, Chloor Huidig: 0.0, 
+PH+ Toevoegen: 0.0, PH- Toevoegen: 0.0, 
+Aantal Chloor Toevoegen: 0.0, 
+Melding sturen om de 0 dagen, Melding wordt verstuurd naar: string
+2025-01-30 09:48:44 - [INFO] - Database connection established
+2025-01-30 09:48:50 - [ERROR] - Failed to retrieve settings : name 'result' is not defined
+2025-01-30 09:49:21 - [INFO] - Database connection established
+2025-01-30 09:49:37 - [INFO] - Database connection established
+2025-01-30 09:49:55 - [ERROR] - Failed to send reminder mail : name 'message' is not defined
+2025-01-30 09:50:15 - [INFO] - Database connection established
+2025-01-30 09:51:13 - [ERROR] - Failed to send calculations : date
+2025-01-30 09:52:28 - [INFO] - Database connection established
+2025-01-30 09:54:04 - [ERROR] - Failed to retrieve history : No history was found in database or could be retrieved.
+2025-01-30 09:54:04 - [ERROR] - Failed to retrieve history : 404: No user found
