@@ -14,16 +14,17 @@ def get_settings(url):
 
 # Function to send the email
 def message():
-    url = "http://fastapi:8000/send_email"
-    data = {"subject": "Test Zwembad", "message": "Het is tijd voor een nieuwe meting van het zwembad! \n Probeer in de komende 24h een nieuwe meting te doen. \n \n Met vriendelijke groeten"}
+    url = "http://192.168.238.189:8000/send_email"
+    data = {"subject": "Test Zwembad", "message": "Het is tijd voor een nieuwe meting van het zwembad! \nProbeer in de komende 24h een nieuwe meting te doen. \n \n Met vriendelijke groeten"}
 
+    print("Sending email...")
     response = requests.post(url, json=data)
     print(response.status_code)  # HTTP status code (e.g., 200, 201)
     print(response.json())       # Parse JSON response
 
 
 # Initialize interval before scheduling
-interval = get_settings("http://fastapi:8000/get_settings")
+interval = get_settings("http://192.168.238.189:8000/get_settings")
 
 # Schedule the job with the retrieved interval
 schedule.every(interval).days.do(message)
@@ -32,7 +33,7 @@ schedule.every(interval).days.do(message)
 def update_schedule():
     """Fetch the interval and update the schedule dynamically."""
     global interval  # Indicate that we're modifying the global variable
-    new_interval = get_settings("http://fastapi:8000/get_settings")
+    new_interval = get_settings("http://192.168.238.189:8000/get_settings")
 
     if new_interval != interval:
         print(f"Updating schedule: {new_interval} days")
@@ -45,4 +46,5 @@ def update_schedule():
 while True:
     update_schedule()  # Check for updates
     schedule.run_pending()
+    # message()
     time.sleep(3600)  # Check every hour
