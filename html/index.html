@@ -150,7 +150,6 @@
             try {
                 const response = await fetch("http://192.168.238.56/ph", {
                     method: "POST",
-                    // mode: 'no-cors',  // Disables CORS checks
                     headers: {
                         "Content-Type": "application/json"
                     },
@@ -160,7 +159,7 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                // const result = await response.json(); // Assuming the API returns a JSON response
+                const result = await response.json(); // Assuming the API returns a JSON response
 
             } catch (error) {
                 console.error("Fout bij versturen van pompData:", error);
@@ -282,9 +281,9 @@
             alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
 
             const pomp_data = {
-                PHplus: Number(0),
-                PHmin: Number(0),
-                Chloor: Number(0),
+                PHplus: parseFloat(phPlus),
+                PHmin: parseFloat(phMinus),
+                Chloor: parseFloat(chlorineRequiredMl),
             };
 
             //maak data verstuurbaar api (waardes worden hier opgeslagen omdat ze anders niet beschikbaar zijn buiten de functie)
@@ -296,8 +295,9 @@
                 ph_min: Number(phMinus),
                 chlorine: Number(chlorineRequiredMl),
             };
+
             postPomp(pomp_data)
-            // postHistory(history_data);
+            postHistory(history_data);
         });
     </script>
 </body>
