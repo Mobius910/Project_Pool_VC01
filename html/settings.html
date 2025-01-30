@@ -15,8 +15,6 @@
             /* Zorgt ervoor dat de afbeelding de hele achtergrond bedekt */
             background-repeat: no-repeat;
             /* Voorkomt dat de afbeelding zich herhaalt */
-            height: 100vh;
-            /* Zorgt ervoor dat de achtergrond minimaal de volledige hoogte van het scherm bedekt */
             margin: 0;
             /* Verwijdert de standaard marge van de body */
         }
@@ -99,7 +97,7 @@
                         <h2 class="h5 text-center">Zwembadinstellingen</h2>
                     </div>
                     <div class="card-body">
-                        <form id="settings-form">
+                        <form id="settings-form" onsubmit="saveSettings(event)">
                             <!-- Zwembad Volume -->
                             <div class="mb-3">
                                 <label for="pool-volume" class="form-label">Zwembad Volume (in m³)</label>
@@ -134,16 +132,10 @@
 
                             <!-- Meldingsfrequentie -->
                             <div class="mb-3">
-                                <label for="notification-frequency" class="form-label">meet herinnering</label>
-                                <select class="form-select" id="notification-frequency" required>
-                                    <option value="1">Dagelijks</option>
-                                    <option value="2">Om de dag</option>
-                                    <option value="3">Om de 2 dagen</option>
-                                    <option value="4">Om de 3 dagen</option>
-                                    <option value="7">weekelijks</option>
-                                    <option value="30">maandelijks</option>
-                                </select>
+                                <label for="notification-frequency" class="form-label">Meldingsfrequentie (in dagen)</label>
+                                <input type="number" class="form-control" id="notification-frequency" min="1" required>
                             </div>
+
                             <div class="mb-3">
                                 <label for="notificationEmail" class="form-label">Email voor herinneringen</label>
                                 <input type="email" class="form-control" id="notificationEmail" required>
@@ -169,6 +161,7 @@
     <script>
         document.getElementById("settings-form").addEventListener("submit", async function (e) {
             e.preventDefault();
+
 
             const settings = {
                 pool_volume: Number(document.getElementById("pool-volume").value),
@@ -203,7 +196,33 @@
                 console.error("Fout bij opslaan van instellingen:", error);
                 alert("Er is een fout opgetreden bij het opslaan van de instellingen. Probeer het opnieuw.");
             }
-        });
+        }); 
+        window.onload = loadSettings;
+
+
+        async function loadSettings() {
+    try {
+        const response = await fetch("http://192.168.238.189:8000/get_settings");
+        if (!response.ok) throw new Error("Kan instellingen niet laden");
+        const settings = await response.json();
+        
+        // Velden invullen met opgehaalde data
+        document.getElementById("pool-volume").value = settings.pool_volume;
+        document.getElementById("desired-ph").value = settings.ph_desired;
+        document.getElementById("desired-chlorine").value = settings.chlorine_desired;
+        document.getElementById("ph-plus").value = settings.ph_plus_dose;
+        document.getElementById("ph-minus").value = settings.ph_min_dose;
+        document.getElementById("chlorine").value = settings.chlorine_dose;
+        document.getElementById("notification-frequency").value = settings.notification;
+        document.getElementById("notificationEmail").value = settings.email_receiver;
+
+
+    } catch (error) {
+        alert("Fout bij laden instellingen: " + error.message);
+    }
+}
+
+       
     </script>
 </body>
 

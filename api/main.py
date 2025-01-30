@@ -276,6 +276,8 @@ def post_settings(settings: PoolSettings):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
 
 # To run the FastAPI app, use the following command in the terminal:
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
