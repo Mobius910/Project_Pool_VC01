@@ -195,6 +195,22 @@ async def post_history(history: history):
     except Exception as e:
         logging.error(f"Failed to send calculations : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+# API route that deletes history
+@app.post("/delete_history")
+async def delete_history() :
+    try :
+        # Deletes all history data from database
+        query_db(
+            """
+            TRUNCATE History;
+            """
+        )        
+        logging.info(f"History has been deleted!")
+        return {"message": "History has been deleted!"}
+    except Exception as e:
+        logging.error(f"Failed to delete history : {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Pydantic model
