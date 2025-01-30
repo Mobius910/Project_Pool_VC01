@@ -168,7 +168,7 @@
         }
 
         document.getElementById("clear-history").addEventListener("click", async function () {
-            await fetch("http://192.168.238.189:8000/get_history", { method: "DELETE" });
+            await fetch("http://192.168.238.189:8000/delete_history", { method: "POST" });
             fetchHistory();
         });
 
