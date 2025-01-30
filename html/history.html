@@ -113,8 +113,10 @@
                                         <th>Chloor Benodigd (ml)</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- Dynamisch geladen data uit localStorage -->
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="7" class="text-center">Laden...</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -140,38 +142,39 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Verkrijg de opgeslagen geschiedenis uit localStorage
-        const history = JSON.parse(localStorage.getItem("history")) || [];
-        console.log("Geschiedenis uit localStorage:", history);
+        async function fetchHistory() {
+            const response = await fetch("http://192.168.238.189:8000/get_history");
+            const history = await response.json();
+            const tableBody = document.getElementById("history-table-body");
+            tableBody.innerHTML = "";
+            const historyData = history.history;  // Aangepaste referentie naar de juiste array
 
-        const tableBody = document.querySelector("tbody");
 
-        // Voeg elke logitem toe aan de tabel
-        history.forEach((item, index) => {
-            const row = document.createElement("tr");
+            if (history.length === 0) {
+                tableBody.innerHTML = "<tr><td colspan='7' class='text-center'>Geen data beschikbaar</td></tr>";
+                return;
+            }
+            historyData.forEach((item, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.date}</td>
+                    <td>${item.ph_value}</td>
+                    <td>${item.chlorine_ppm}</td>
+                    <td>${item.ph_plus}</td>
+                    <td>${item.ph_min}</td>
+                    <td>${item.chlorine}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
 
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${item.date}</td>
-                <td>${item.ph}</td>
-                <td>${item.chlorine}</td>
-                <td>${item.phPlus}</td>
-                <td>${item.phMinus}</td>
-                <td>${item.chlorineRequiredMl}</td>
-            `;
-
-            tableBody.appendChild(row);
+        document.getElementById("clear-history").addEventListener("click", async function () {
+            await fetch("http://192.168.238.189:8000/get_history", { method: "DELETE" });
+            fetchHistory();
         });
 
-
-        // Voeg een event listener toe aan de verwijder-knop
-        document.getElementById("clear-history").addEventListener("click", function () {
-            // Verwijder de geschiedenis uit localStorage
-            localStorage.removeItem("history");
-
-            // Herlaad de pagina om de tabel te updaten
-            window.location.reload();
-        });
+        fetchHistory();
     </script>
 
 

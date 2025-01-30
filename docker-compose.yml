@@ -2,6 +2,8 @@ services:
   Webserver:
     image: rtsp/lighttpd
     container_name: lighttpd
+    environment:
+      URL: "fastapi:8000"
     ports:
       - "80:80"
     volumes:
@@ -28,6 +30,16 @@ services:
       - /home/pi/Project/Project_Pool_VC01/api/main.py:/code/app/main.py:ro
     restart: unless-stopped
     depends_on:
+      - mariadb
+
+  message:
+    build: message_shedule
+    container_name: message
+    volumes:
+      - /home/pi/Project/Project_Pool_VC01/message_shedule/message.py:/code/app/main.py:ro
+    restart: unless-stopped
+    depends_on:
+      - fastapi
       - mariadb
 
   mariadb:

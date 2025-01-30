@@ -122,20 +122,50 @@ async def get_log():
     return JSONResponse(content={"log": log_content})
 
 @app.get("/get_history")
-async def get_history() :
-    try :
-        query = "SELECT * FROM History" # env var
+async def get_history():
+    try:
+        query = """
+        SELECT id, Date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine
+        FROM History
+        ORDER BY Date DESC
+        """
         result = query_db(query)
         if not result:
             logging.error(f"Failed to retrieve history : No history was found in database or could be retrieved.")
-            raise HTTPException(status_code=404, detail="No user found")
-        return {"history": result}
+            raise HTTPException(status_code=404, detail="No history found")
+
+        # Data formatteren naar JSON-compatibel formaat
+        history_data = [
+            {
+                "id": row["id"],
+                "date": row["Date"].strftime("%Y-%m-%d %H:%M:%S"),  # Datum en tijd formatteren
+                "ph_value": row["ph_value"],
+                "chlorine_ppm": row["chlorine_ppm"],
+                "ph_plus": row["ph_plus"],
+                "ph_min": row["ph_min"],
+                "chlorine": row["chlorine"]
+            }
+            for row in result
+        ]
+
+        return {"history": history_data}
     except Exception as e:
         logging.error(f"Failed to retrieve history : {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
     
+    
+# Pydantic model for History
+class history(BaseModel):
+    date: datetime
+    ph_value: float
+    chlorine_ppm: float
+    ph_plus: float
+    ph_min: float
+    chlorine: float
+
 @app.post("/post_history")
-async def post_history() :
+async def post_history(history: history):
     try :
         # Extract values correctly from the Pydantic model
         date = history.date
@@ -149,7 +179,7 @@ async def post_history() :
         query_db(
             """
             INSERT INTO History (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
-            VALUES (?, ?, ?, ?, ?, ?,
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             (date, ph_value, chlorine_ppm, ph_plus, ph_min, chlorine)
         )
@@ -167,7 +197,7 @@ async def post_history() :
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Pydantic model voor zwembadinstellingen
+# Pydantic model
 class Email(BaseModel):
     subject: str
     message: str
