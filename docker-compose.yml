@@ -3,7 +3,7 @@ services:
     image: rtsp/lighttpd
     container_name: lighttpd
     environment:
-      URL: "fastapi:8000"
+      URL: "http://fastapi:8000"
     ports:
       - "80:80"
     volumes:

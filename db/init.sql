@@ -23,4 +23,4 @@ email_receiver varchar(128)
 );
 
 INSERT INTO Settings (pool_volume, ph_desired, chlorine_desired, ph_plus_dose, ph_min_dose, chlorine_dose, notification, email_receiver)
-VALUES (50, 7.4, 2, 6.66, 6.66, 8, 7, "r0937987@student.thomasmore.be");
+VALUES (50, 7.4, 2, 6.6, 6.6, 8, 7, "r0937987@student.thomasmore.be");
