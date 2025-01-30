@@ -145,8 +145,34 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        //define variables with default values
+        // functie om gegevens te versturen naar de api om een overzicht van de history bij te houden
+        async function postHistory(history_data) {
+            try {
+                const response = await fetch("http://192.168.238.189:8000/post_history", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(history_data)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json(); // Try to get more details
+                    console.error("Server response:", errorData);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
 
+                const result = await response.json(); // Assuming the API returns a JSON response
+
+                // stuur de gebruiker naar de history-pagina
+                window.location.href = "history.html";
+
+            } catch (error) {
+                console.error("Fout bij versturen van History:", error);
+                alert("Er is een fout opgetreden bij het versturen van de history. Probeer het opnieuw.");
+            }
+        }
+
+        //define variables with default values
         // pool settings
         let poolVolume = 50;
         let phDesired = 7.2;
@@ -157,6 +183,27 @@
         // notification settings
         let notification = 7;
         let emailReceiver = 'zwembad.VC01@gmail.com';
+
+        //functie om datum te krijgen in juiste formaat en tijdzone
+        // https://stackoverflow.com/questions/17415579/how-to-iso-8601-format-a-date-with-timezone-offset-in-javascript
+        function toIsoString(date) {
+            let tzo = -date.getTimezoneOffset(),
+                dif = tzo >= 0 ? '+' : '-',
+                pad = function (num) {
+                    return (num < 10 ? '0' : '') + num;
+                };
+
+            return date.getFullYear() +
+                '-' + pad(date.getMonth() + 1) +
+                '-' + pad(date.getDate()) +
+                'T' + pad(date.getHours()) +
+                ':' + pad(date.getMinutes()) +
+                ':' + pad(date.getSeconds()) +
+                dif + pad(Math.floor(Math.abs(tzo) / 60)) +
+                ':' + pad(Math.abs(tzo) % 60);
+        }
+        let dt = new Date();
+        const formattedDate = toIsoString(dt);
 
         // verkrijg settings van api
         fetch('http://192.168.238.189:8000/get_settings')
@@ -176,13 +223,8 @@
                 chlorineConcentration = data.chlorine_dose;
                 notification = data.notification;
                 emailReceiver = data.email_receiver;
-                // console.log(poolVolume, phDesired, chlorineDesired, phPlusConcentration, phMinusConcentration, chlorineConcentration, notification, emailReceiver);
             })
             .catch(error => console.error('Error fetching data:', error));
-
-        // Verkrijg het zwembadvolume uit localStorage, of gebruik 50 m³ als standaardwaarde
-        // const poolSettings = JSON.parse(localStorage.getItem("poolSettings")) || {};
-        // const poolVolume = poolSettings.poolVolume || 50; // Standaard 50 m³ als geen volume is ingesteld
 
         // Event listener voor formulierverzending
         document.getElementById('pool-form').addEventListener('submit', function (event) {
@@ -191,11 +233,6 @@
             // Verkrijg de waarden uit het formulier
             const ph = parseFloat(document.getElementById('current-ph').value);
             const chlorine = parseFloat(document.getElementById('current-chlorine').value);
-
-            // Haal de instellingen voor pH- en chloorconcentraties op uit localStorage
-            // const phPlusConcentration = poolSettings.phPlusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
-            // const phMinusConcentration = poolSettings.phMinusConcentration || 20/3; // Aangepaste dosering voor 0,1 pH stijging
-            // const chlorineConcentration = poolSettings.chlorineConcentration || 8; // Aangepaste dosering voor 1 ppm stijging
 
             // Bereken pH-aanpassing (pH+ of pH-)
             let phPlus = 0;
@@ -212,7 +249,6 @@
             }
 
             // Bereken de benodigde hoeveelheid chloor in ml
-            // const chlorineDesired = poolSettings.desiredChlorine || 3;  // Gewenste chloorwaarde in ppm
             let chlorineRequiredMl = 0;
             if (chlorine < chlorineDesired) {
                 chlorineRequiredMl = (poolVolume * chlorineConcentration) * (chlorineDesired - chlorine); // Benodigde chloor in ml           
@@ -222,23 +258,16 @@
             // Toon de berekende waarde in een pop-up
             alert(`pH+: ${phPlus} ml, pH-: ${phMinus} ml, Chloor: ${chlorineRequiredMl} ml`);
 
-            // Sla de gegevens op in localStorage en stuur ze door naar history.html
-            const entry = {
-                date: new Date().toLocaleString(),
-                ph: ph,
-                chlorine: chlorine,
-                phPlus: phPlus !== 0 ? `${phPlus}` : "Geen pH+ nodig",
-                phMinus: phMinus !== 0 ? `${phMinus}` : "Geen pH- nodig",
-                chlorineRequiredMl: chlorineRequiredMl !== 0 ? `${chlorineRequiredMl}` : "Geen chloor nodig"
+            //verstuur data naar api (waardes worden hier opgeslagen omdat ze anders niet beschikbaar zijn buiten de functie)
+            const history_data = {
+                date: formattedDate,
+                ph_value: Number(ph),
+                chlorine_ppm: Number(chlorine),
+                ph_plus: Number(phMinus),
+                ph_min: Number(phMinus),
+                chlorine: Number(chlorineRequiredMl),
             };
-
-            // Verkrijg de bestaande geschiedenis of maak een lege lijst als history niet bestaat
-            const history = JSON.parse(localStorage.getItem("history")) || [];  // Lege array als geen geschiedenis is opgeslagen
-            history.push(entry);
-            localStorage.setItem("history", JSON.stringify(history));
-
-            // Verstuur de gebruiker naar de history-pagina
-            window.location.href = "history.html";
+            postHistory(history_data);
         });
     </script>
 </body>
