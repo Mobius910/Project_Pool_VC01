@@ -49,5 +49,5 @@ def update_schedule():
 while True:
     update_schedule()  # Check for updates
     schedule.run_pending()
-    # message()
+    message()
     time.sleep(3600)  # Check every hour
