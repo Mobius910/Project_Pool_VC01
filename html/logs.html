@@ -49,6 +49,12 @@
         footer {
             font-size: 0.9rem;
         }
+
+        .card-body {
+            max-height: 50vh; /*Max hight for log viewer box */
+            overflow-y: auto;  /* Vertical scrollbar when content overflows */
+            
+        }
     </style>
 </head>
 
@@ -92,7 +98,7 @@
     <!-- Main Content -->
     <main class="container my-5 flex-grow-1">
         <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-8 col-sm-10">
+            <div class="col-lg-10 col-md-10 col-sm-10">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
                         <h2 class="h5 text-center">Logs</h2>
