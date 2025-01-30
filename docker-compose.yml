@@ -30,6 +30,16 @@ services:
     depends_on:
       - mariadb
 
+  message:
+    build: message_shedule
+    container_name: message
+    volumes:
+      - /home/pi/Project/Project_Pool_VC01/message_shedule/message.py:/code/app/main.py:ro
+    restart: unless-stopped
+    depends_on:
+      - fastapi
+      - mariadb
+
   mariadb:
     image: mariadb:latest
     container_name: mariadb
