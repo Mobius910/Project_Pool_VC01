@@ -168,7 +168,7 @@
         }
 
         // functie om gegevens te versturen naar de api om een overzicht van de history bij te houden
-        async function postHistory(history_data) {
+        async function postHistory(history_data,pomp_data) {
             try {
                 const response = await fetch("http://192.168.238.189:8000/post_history", {
                     method: "POST",
@@ -184,6 +184,8 @@
                 }
 
                 const result = await response.json(); // Assuming the API returns a JSON response
+
+                await postPomp(pomp_data);
 
                 // stuur de gebruiker naar de history-pagina
                 window.location.href = "history.html";
@@ -296,8 +298,8 @@
                 chlorine: Number(chlorineRequiredMl),
             };
 
-            postPomp(pomp_data)
-            postHistory(history_data);
+            postHistory(history_data,pomp_data);
+
         });
     </script>
 </body>
