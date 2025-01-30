@@ -27,7 +27,7 @@ services:
       - "8000:8000"
     volumes:
       - /home/pi/Project/Project_Pool_VC01/api/main.py:/code/app/main.py:ro
-      - /home/pi/Project_Logs:/code/app/logfile.log
+      - /home/pi/Project_Logs/logfile.log:/code/app/logfile.log
     restart: unless-stopped
     depends_on:
       - mariadb
