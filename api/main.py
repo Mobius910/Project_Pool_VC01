@@ -1,12 +1,11 @@
+import mariadb, time, os, smtplib, logging
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import mariadb, time, os, requests, smtplib, socket, pymysql, json, logging
 from datetime import datetime
-from contextlib import closing
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
