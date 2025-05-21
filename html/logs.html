@@ -125,7 +125,7 @@
     <script>
         async function fetchLog() {
             try {
-                const response = await fetch('http://192.168.238.189:8000/get_log');
+                const response = await fetch('http://192.168.228.189:8000/get_log');
                 const data = await response.json();
                 const logViewer = document.getElementById('logviewer');
                 logViewer.textContent = data.log.join('\n');
