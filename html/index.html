@@ -149,7 +149,7 @@
         // verstuur waarden na berekningen naar pomp
         async function postPomp(pomp_data) {
             try {
-                const response = await fetch("http://192.168.238.56/ph", {
+                const response = await fetch("http://192.168.228.56/ph", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -171,7 +171,7 @@
         // functie om gegevens te versturen naar de api om een overzicht van de history bij te houden
         async function postHistory(history_data,pomp_data) {
             try {
-                const response = await fetch("http://192.168.238.189:8000/post_history", {
+                const response = await fetch("http://192.168.228.189:8000/post_history", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -231,7 +231,7 @@
         const formattedDate = toIsoString(dt);
 
         // verkrijg settings van api
-        fetch('http://192.168.238.189:8000/get_settings')
+        fetch('http://192.168.228.189:8000/get_settings')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
